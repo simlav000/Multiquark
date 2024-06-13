@@ -1,0 +1,13 @@
+TFile**		/home/simon515lavoie/McGill/Multiquark/ROOT/data/AOD.13005594._001460.pool.root	
+ TFile*		/home/simon515lavoie/McGill/Multiquark/ROOT/data/AOD.13005594._001460.pool.root	
+  KEY: TTree	##Shapes;1	##Shapes
+  KEY: TTree	##Links;1	##Links
+  KEY: TTree	##Params;1	##Params
+  KEY: TTree	CollectionTree;1	CollectionTree
+  KEY: TTree	POOLContainerForm;1	POOLContainerForm
+  KEY: TTree	POOLContainer;1	POOLContainer
+  KEY: TTree	POOLCollectionTree;1	POOLCollectionTree
+  KEY: TTree	MetaData;1	MetaData
+  KEY: TTree	MetaDataHdrForm;1	MetaDataHdrForm
+  KEY: TTree	MetaDataHdr;1	MetaDataHdr
+[0mroot [1] [0m

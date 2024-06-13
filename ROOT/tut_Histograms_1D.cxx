@@ -113,7 +113,7 @@ void tut_Histograms_1D(){
     // Draw Legend
     TLegend *legend = new TLegend(.60,.55,.93, .70);  
     legend->AddEntry(hist1,"No cuts (from one sample)", "f");
-    //legend->AddEntry(hist2,"V0 tracks pT > 100, |eta| < 2.5 (from one sample)", "f");
+    legend->AddEntry(hist2,"V0 tracks pT > 100, |eta| < 2.5 (from one sample)", "f");
 
     legend->SetBorderSize(0);
     legend->SetFillStyle(0);
