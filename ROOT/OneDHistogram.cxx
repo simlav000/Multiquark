@@ -21,23 +21,18 @@ double kfit(const double *x, const double *par){  // Kaon Fit: Voight + 2nd degr
     return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3] + par[4]*x[0] + par[5]*x[0]*x[0];  // Gaussian + 2nd order polynomial
 }
 
-    
-    
-void tut_Histograms_1D(){
-    
+void OneDHistogram(){
     int nthreads = 12;
     ROOT::EnableImplicitMT(nthreads);
-
-    // For smaller files (use TFile and TTree)
-    // TFile *f = TFile::Open("/Users/Cole/Documents/research/2020/data/fullRun/newOut0/hist-sample.root");//path of MC input file
-   // TFile *f = TFile::Open("/home/steben/projects/rrg-steven/steben/MultiquarkSearch/newtril/run/dataoct26/user.kosulliv.00267358.physics_MinBias.recon.AOD.r10170_tid13005594_00.11_hist.210140925/*.root"); // path of data input file
-    // TTree *t = (TTree*)f->Get("KsValidation");
 
     // For larger files (use TChain)
     TChain *t1 = new TChain("KsValidation");
 
-    //get files from eos
-    t1->Add("/home/simon515lavoie/multiquark/ROOT/hist-sample.root");
+    std::string dir_path = "/home/simon515lavoie/McGill/Multiquark/ROOT/data/";
+    std::string filename = "dataset.root";
+    std::string fullpath = dir_path + filename;
+    const char* dataset = fullpath.c_str();
+    t1->Add(dataset);
 
     // Create canvas
     TCanvas *c1 = new TCanvas("nc1", "nc1");
@@ -60,7 +55,7 @@ void tut_Histograms_1D(){
     hist1->Sumw2();
     //hist2->Sumw2();
 
-    t1->Draw("RecMass>>nhist1", "");
+    t1->Draw("recMass>>nhist1", "");
     //t1->Draw("RecMass>>nhist2", K_candidate_cuts);
 
     //t->Draw("recPhi>>nhist1", cut_on_Kmass_signal_low && cut_on_Kmass_signal_high &&"RecCosTheta_3D > 0.9998 && RecDist_3D > 3 && RecPt > 300 && RecMassLambda > 1125");
@@ -122,3 +117,4 @@ void tut_Histograms_1D(){
     c1->SaveAs("~/multiquark/ROOT/test.png");
 
 }
+
