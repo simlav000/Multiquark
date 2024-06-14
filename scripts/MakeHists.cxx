@@ -1,18 +1,44 @@
+#include "Rtypes.h"
 #include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
 #include <TObjArray.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TCanvas.h>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 #include <vector>
 #include <map>
 #include <string>
 
+TH2F* MakeKLMassHist() {
+    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 0, 1000, 50, 1000, 1600);
+    hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
+    hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
+
+    return hist;
+}
+
+TH1F* MakeKMassHist() {
+    TH1F *hist= new TH1F("hist_KMass", "K_{s} mass", 50, 0, 1000);
+    hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
+    hist->GetYaxis()->SetTitle("Candidates");
+
+    return hist;
+}
+
 void MakeHists() {
+    // Find ROOT file
+    std::string home = std::getenv("HOME");
+    std::string path = "/McGill/Multiquark/data/";
+    std::string data = "dataset.root";
+    std::string full = home + path + data;
+    const char* name = full.c_str();
+    
     // Open the ROOT file
-    TFile *file = TFile::Open("/home/simlav000/McGill/Multiquark/ROOT/data/dataset.root");
+    TFile *file = TFile::Open(name);
     if (!file || file->IsZombie()) {
         std::cerr << "Error: Could not open file" << std::endl;
         return;
@@ -27,35 +53,30 @@ void MakeHists() {
         return;
     }
 
-    // Set the branch address for KMass
-    Float_t KMass, LMass, CosTheta;
+    // Declare desired branches 
+    // See m_varNames in Multiquark.h for list of available branches
+    Float_t KMass, LMass, CosTheta, Pt;
     myTree->SetBranchAddress("KMass", &KMass);
     myTree->SetBranchAddress("LMass", &LMass);
     myTree->SetBranchAddress("CosTheta", &CosTheta);
 
     // Create a histograms
-    //TH1F *KMassHistogram = new TH1F("hist_KMass", "K_{s} mass", 50, 0, 1000);
-    //KMassHistogram->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
-    //KMassHistogram->GetYaxis()->SetTitle("Candidates");
-
-    TH2D *KLMassHistogram = new TH2D("hist_KLMass", "K_{s} VS #Lambda mass", 50, 0, 1000, 50, 0, 1000);
-    KLMassHistogram->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
-    KLMassHistogram->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
+    TH1F* KMassHistogram = MakeKMassHist();
+    TH2F* KLMassHistogram = MakeKLMassHist();
     
     // Temporarily
-    std::ofstream outFile("KLMass.csv");
+    //std::ofstream outFile("KLMass.csv");
 
     // Loop over entries in the TTree and fill the histograms
     Long64_t numEntries = myTree->GetEntries();
     for (Long64_t i = 0; i < numEntries; ++i) {
         myTree->GetEntry(i);
-        std::cout << KMass << LMass << std::endl;
-        KLMassHistogram->AddBinContent(KMass, LMass);
-        outFile << KMass << "," << LMass << std::endl;
+        KLMassHistogram->Fill(KMass, LMass);
+        //outFile << KMass << "," << LMass << std::endl;
         
     } 
 
-    outFile.close();
+    //outFile.close();
 
     // Create a canvas and draw the histogram
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 800, 600);
@@ -73,3 +94,5 @@ void MakeHists() {
     file->Close();
     delete file;
 }
+
+
