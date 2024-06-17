@@ -1,4 +1,3 @@
-#include "Rtypes.h"
 #include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
@@ -6,15 +5,13 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TCanvas.h>
+#include <TApplication.h>
 #include <iostream>
-#include <fstream>
 #include <cstdlib>
-#include <vector>
-#include <map>
 #include <string>
 
 TH2F* MakeKLMassHist() {
-    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 0, 1000, 50, 1000, 1600);
+    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
 
@@ -59,36 +56,45 @@ void MakeHists() {
     myTree->SetBranchAddress("KMass", &KMass);
     myTree->SetBranchAddress("LMass", &LMass);
     myTree->SetBranchAddress("CosTheta", &CosTheta);
+    myTree->SetBranchAddress("Pt", &Pt);
 
     // Create a histograms
     TH1F* KMassHistogram = MakeKMassHist();
     TH2F* KLMassHistogram = MakeKLMassHist();
     
-    // Temporarily
-    //std::ofstream outFile("KLMass.csv");
-
     // Loop over entries in the TTree and fill the histograms
     Long64_t numEntries = myTree->GetEntries();
     for (Long64_t i = 0; i < numEntries; ++i) {
         myTree->GetEntry(i);
-        KLMassHistogram->Fill(KMass, LMass);
-        //outFile << KMass << "," << LMass << std::endl;
         
-    } 
+        if (CosTheta > 0.9998 && Pt > 400) {
+            KMassHistogram->Fill(KMass);
+            KLMassHistogram->Fill(KMass, LMass);
+        }
+    }
 
-    //outFile.close();
-
-    // Create a canvas and draw the histogram
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 800, 600);
-    // COLZ draws the histogram with a color map
-    KLMassHistogram->Draw("COLZ");
+    // Create a split canvas and draw the histogram
+    TCanvas *canvas1 = new TCanvas("canvas", "Histogram Canvas", 800, 600);
+    
+    // Draw KLMassHistogram on first canvas
+    KLMassHistogram->Draw("COLZ"); // COLZ draws the histogram with a color map
 
     // Save the histogram as an image file (optional)
-    canvas->SaveAs("KLMass_histogram.png");
+    canvas1->SaveAs("KLMass_histogram.png");
+
+    TCanvas *canvas2 = new TCanvas("canvas", "Histogram Canvas", 800, 600);
+
+    // Draw KMassHistogram
+    KMassHistogram->Draw();
+
+    // Save the histogram as an image file (optional)
+    canvas2->SaveAs("KMass_histogram.png");
 
     // Clean up
-    delete canvas;
+    delete canvas1;
+    delete canvas2;
     delete KLMassHistogram;
+    delete KMassHistogram;
 
     // Close the ROOT file
     file->Close();
