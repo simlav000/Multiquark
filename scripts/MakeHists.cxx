@@ -57,6 +57,8 @@ void MakeKMassHist(TTree* myTree) {
 
     myTree->Draw("KMass>>hist_KMass", "", "hist"); 
     myTree->Draw("KMass>>hist_KMass_CosTheta_cut", cut_on_KcosTheta_3D, "hist same");
+    // TODO: In Cuts.h, we make a cut on distance (Rxy). Figure out if this 
+    // is sqrt(dx^2 + dy^2) or sqrt(dx^2 + dy^2 + dz^2) and what they mean
     myTree->Draw("KMass>>hist_KMass_AllCuts", K_signal_cuts, "hist same");
 
     hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
