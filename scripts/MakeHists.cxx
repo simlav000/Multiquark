@@ -1,3 +1,5 @@
+#include "Cuts.h"
+
 #include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
@@ -5,6 +7,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TCanvas.h>
+#include <TCut.h>
 #include <TApplication.h>
 #include <iostream>
 #include <cstdlib>
@@ -52,11 +55,12 @@ void MakeHists() {
 
     // Declare desired branches 
     // See m_varNames in Multiquark.h for list of available branches
-    Float_t KMass, LMass, CosTheta, Pt;
+    Float_t KMass, LMass, CosTheta, Pt, DeltaR;
     myTree->SetBranchAddress("KMass", &KMass);
     myTree->SetBranchAddress("LMass", &LMass);
     myTree->SetBranchAddress("CosTheta", &CosTheta);
     myTree->SetBranchAddress("Pt", &Pt);
+    myTree->SetBranchAddress("DeltaR", &DeltaR);
 
     // Create a histograms
     TH1F* KMassHistogram = MakeKMassHist();
@@ -67,10 +71,10 @@ void MakeHists() {
     for (Long64_t i = 0; i < numEntries; ++i) {
         myTree->GetEntry(i);
         
-        if (CosTheta > 0.9998 && Pt > 400) {
-            KMassHistogram->Fill(KMass);
-            KLMassHistogram->Fill(KMass, LMass);
-        }
+        //KMassHistogram->Fill(KMass); 
+
+        KMassHistogram->Fill(KMass);
+        //KLMassHistogram->Fill(KMass, LMass);
     }
 
     // Create a split canvas and draw the histogram
@@ -89,6 +93,14 @@ void MakeHists() {
 
     // Save the histogram as an image file (optional)
     canvas2->SaveAs("KMass_histogram.png");
+
+    TCanvas *c3 = new TCanvas("canvas", "Histogram Canvas", 800, 600);
+    TH1F* KMassHistogram2 = new TH1F("hist_KMass", "K_{s} mass", 200, 400, 600);
+    //KMassHistogram2->Sumw2();
+    myTree->Draw("KMass>>hist_KMass"); 
+
+    c3->SaveAs("test.png");
+
 
     // Clean up
     delete canvas1;
