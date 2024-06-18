@@ -8,25 +8,86 @@
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <TCut.h>
-#include <TApplication.h>
+#include <TLegend.h>
 #include <iostream>
 #include <cstdlib>
 #include <string>
 
-TH2F* MakeKLMassHist() {
+void MakeKLMassHist(TTree* myTree) {
+    // For now this method doesn't work properly
+    // Create a canvas
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 800, 600);
+
+    // Create a 2D histogram
     TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
+
+    // Sum of squares of weights for error calculation
+    hist->Sumw2();
+
+    // Fill the histogram with data from the TTree
+    myTree->Draw("KMass:LMass >> hist_KLMass");
+
+    // Set axis titles
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
 
-    return hist;
+    // Draw the histogram with a color map
+    hist->Draw("COLZ");
+
+    // Save the canvas as a PNG file
+    canvas->SaveAs("KLMass2.png");
+
+    // Clean up
+    delete hist;
+    delete canvas;
 }
 
-TH1F* MakeKMassHist() {
-    TH1F *hist= new TH1F("hist_KMass", "K_{s} mass", 50, 0, 1000);
-    hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
-    hist->GetYaxis()->SetTitle("Candidates");
+void MakeKMassHist(TTree* myTree) {
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
-    return hist;
+    TH1F* hist1 = new TH1F("hist_KMass", "K^{0}_{s} Invariant Mass", 200, 300, 650);
+    TH1F* hist2 = new TH1F("hist_KMass_CosTheta_cut", "K_{s} mass (CosTheta cut)", 200, 300, 650);
+    TH1F* hist3 = new TH1F("hist_KMass_AllCuts", "K_{s} mass (All cuts)", 200, 300, 650);
+
+    //hist->Sumw2();
+    hist1->SetFillColor(kViolet + 6);
+    hist1->SetLineColor(kBlack);
+    hist2->SetFillColor(kOrange + 10);
+    hist2->SetLineColor(kBlack);
+    hist3->SetFillColor(kSpring - 2);
+    hist3->SetLineColor(kBlack);
+
+
+    myTree->Draw("KMass>>hist_KMass", "", "hist"); 
+    myTree->Draw("KMass>>hist_KMass_CosTheta_cut", cut_on_KcosTheta_3D, "hist same");
+    myTree->Draw("KMass>>hist_KMass_AllCuts", K_signal_cuts, "hist same");
+
+    hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
+    hist1->GetYaxis()->SetTitle("Counts per bin");
+
+    // Adjust y-axis range
+    hist1->SetMinimum(0);
+
+    // Get rid of little stats box
+    hist1->SetStats(false);
+    hist2->SetStats(false);
+    hist3->SetStats(false);
+
+    // Absolute legend
+    TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+    legend->AddEntry(hist1, "Full distribution", "f");
+    std::string label = "Cos(#theta) > " + std::to_string(KcosTheta_3D_low);
+    const char* entry = label.c_str();
+    legend->AddEntry(hist2, entry, "f");
+    legend->AddEntry(hist3, "All cuts", "f");
+    legend->Draw();
+
+    canvas->SaveAs("KMass.png");
+
+    delete hist1;
+    delete hist2;
+    delete legend;
+    delete canvas;
 }
 
 void MakeHists() {
@@ -53,6 +114,9 @@ void MakeHists() {
         return;
     }
 
+
+    MakeKMassHist(myTree);
+    
     // Declare desired branches 
     // See m_varNames in Multiquark.h for list of available branches
     Float_t KMass, LMass, CosTheta, Pt, DeltaR;
@@ -62,10 +126,6 @@ void MakeHists() {
     myTree->SetBranchAddress("Pt", &Pt);
     myTree->SetBranchAddress("DeltaR", &DeltaR);
 
-    // Create a histograms
-    TH1F* KMassHistogram = MakeKMassHist();
-    TH2F* KLMassHistogram = MakeKLMassHist();
-    
     // Loop over entries in the TTree and fill the histograms
     Long64_t numEntries = myTree->GetEntries();
     for (Long64_t i = 0; i < numEntries; ++i) {
@@ -73,40 +133,22 @@ void MakeHists() {
         
         //KMassHistogram->Fill(KMass); 
 
-        KMassHistogram->Fill(KMass);
         //KLMassHistogram->Fill(KMass, LMass);
     }
 
+
     // Create a split canvas and draw the histogram
     TCanvas *canvas1 = new TCanvas("canvas", "Histogram Canvas", 800, 600);
-    
+
     // Draw KLMassHistogram on first canvas
-    KLMassHistogram->Draw("COLZ"); // COLZ draws the histogram with a color map
+    //KLMassHistogram->Draw("COLZ"); // COLZ draws the histogram with a color map
 
     // Save the histogram as an image file (optional)
     canvas1->SaveAs("KLMass_histogram.png");
 
-    TCanvas *canvas2 = new TCanvas("canvas", "Histogram Canvas", 800, 600);
-
-    // Draw KMassHistogram
-    KMassHistogram->Draw();
-
-    // Save the histogram as an image file (optional)
-    canvas2->SaveAs("KMass_histogram.png");
-
-    TCanvas *c3 = new TCanvas("canvas", "Histogram Canvas", 800, 600);
-    TH1F* KMassHistogram2 = new TH1F("hist_KMass", "K_{s} mass", 200, 400, 600);
-    //KMassHistogram2->Sumw2();
-    myTree->Draw("KMass>>hist_KMass"); 
-
-    c3->SaveAs("test.png");
-
-
     // Clean up
     delete canvas1;
-    delete canvas2;
-    delete KLMassHistogram;
-    delete KMassHistogram;
+    //delete KLMassHistogram;
 
     // Close the ROOT file
     file->Close();
