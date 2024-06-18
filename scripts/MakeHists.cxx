@@ -21,9 +21,6 @@ void MakeKLMassHist(TTree* myTree) {
     // Create a 2D histogram
     TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
 
-    // Sum of squares of weights for error calculation
-    hist->Sumw2();
-
     // Fill the histogram with data from the TTree
     myTree->Draw("KMass:LMass >> hist_KLMass");
 
@@ -83,6 +80,55 @@ void MakeKMassHist(TTree* myTree) {
     legend->Draw();
 
     canvas->SaveAs("KMass.png");
+
+    delete hist1;
+    delete hist2;
+    delete legend;
+    delete canvas;
+}
+
+void MakeLMassHist(TTree* myTree) {
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+
+    TH1F* hist1 = new TH1F("hist_LMass", "#Lambda Invariant Mass", 200, 900, 1300);
+    TH1F* hist2 = new TH1F("hist_LMass_CosTheta_cut", "#Lambda mass (CosTheta cut)", 200, 900, 1300);
+    TH1F* hist3 = new TH1F("hist_LMass_AllCuts", "#Lambda mass (All cuts)", 200, 900, 1300);
+
+    //hist->Sumw2();
+    hist1->SetFillColor(kViolet + 6);
+    hist1->SetLineColor(kBlack);
+    hist2->SetFillColor(kOrange + 10);
+    hist2->SetLineColor(kBlack);
+    hist3->SetFillColor(kSpring - 2);
+    hist3->SetLineColor(kBlack);
+
+
+    myTree->Draw("LMass>>hist_LMass", "", "hist"); 
+    myTree->Draw("LMass>>hist_LMass_CosTheta_cut", cut_on_LcosTheta_3D, "hist same");
+    myTree->Draw("LMass>>hist_LMass_AllCuts", L_signal_cuts, "hist same");
+
+    // TODO: Figure out if this should be m_{p^{+}#pi^{-}}
+    hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]"); 
+    hist1->GetYaxis()->SetTitle("Counts per bin");
+
+    // Adjust y-axis range
+    hist1->SetMinimum(0);
+
+    // Get rid of little stats box
+    hist1->SetStats(false);
+    hist2->SetStats(false);
+    hist3->SetStats(false);
+
+    // Absolute legend
+    TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
+    legend->AddEntry(hist1, "Full distribution", "f");
+    std::string label = "Cos(#theta) > " + std::to_string(KcosTheta_3D_low);
+    const char* entry = label.c_str();
+    legend->AddEntry(hist2, entry, "f");
+    legend->AddEntry(hist3, "All cuts", "f");
+    legend->Draw();
+
+    canvas->SaveAs("LMass.png");
 
     delete hist1;
     delete hist2;
