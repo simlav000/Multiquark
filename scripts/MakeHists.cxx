@@ -9,38 +9,21 @@
 #include <TCanvas.h>
 #include <TCut.h>
 #include <TLegend.h>
+#include <TStyle.h>
 #include <iostream>
 #include <cstdlib>
 #include <string>
 
 void MakeKLMassHist(TTree* myTree) {
-    // Declare desired branches 
-    // See m_varNames in Multiquark.h for list of available branches
-    Float_t KMass, LMass, CosTheta, Pt, DeltaR;
-    myTree->SetBranchAddress("KMass", &KMass);
-    myTree->SetBranchAddress("LMass", &LMass);
-    myTree->SetBranchAddress("CosTheta", &CosTheta);
-    myTree->SetBranchAddress("Pt", &Pt);
-    myTree->SetBranchAddress("DeltaR", &DeltaR);
-    //
-    // Create a 2D histogram
+
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
     TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
 
-    // Loop over entries in the TTree and fill the histograms
-    Long64_t numEntries = myTree->GetEntries();
-    for (Long64_t i = 0; i < numEntries; ++i) {
-        myTree->GetEntry(i);
-        
-        hist->Fill(KMass, LMass);
-    }
-
-    // For now this method doesn't work properly
-    // Create a canvas
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 800, 600);
-
+    gStyle->SetPalette(89); //kMint
+    hist->SetStats(false);
 
     // Fill the histogram with data from the TTree
-    myTree->Draw("KMass:LMass >> hist_KLMass");
+    myTree->Draw("LMass:KMass >> hist_KLMass", cut_on_KcosTheta_3D);
 
     // Set axis titles
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
@@ -141,7 +124,7 @@ void MakeLMassHist(TTree* myTree) {
     // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
     legend->AddEntry(hist1, "Full distribution", "f");
-    std::string label = "Cos(#theta) > " + std::to_string(KcosTheta_3D_low);
+    std::string label = "Cos(#theta) > " + std::to_string(LcosTheta_3D_low);
     const char* entry = label.c_str();
     legend->AddEntry(hist2, entry, "f");
     legend->AddEntry(hist3, "All cuts", "f");
@@ -181,6 +164,7 @@ void MakeHists() {
 
     MakeKMassHist(myTree);
     MakeLMassHist(myTree);
+    MakeKLMassHist(myTree);
     
     // Close the ROOT file
     file->Close();
