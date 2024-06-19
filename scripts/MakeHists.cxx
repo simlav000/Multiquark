@@ -14,12 +14,30 @@
 #include <string>
 
 void MakeKLMassHist(TTree* myTree) {
+    // Declare desired branches 
+    // See m_varNames in Multiquark.h for list of available branches
+    Float_t KMass, LMass, CosTheta, Pt, DeltaR;
+    myTree->SetBranchAddress("KMass", &KMass);
+    myTree->SetBranchAddress("LMass", &LMass);
+    myTree->SetBranchAddress("CosTheta", &CosTheta);
+    myTree->SetBranchAddress("Pt", &Pt);
+    myTree->SetBranchAddress("DeltaR", &DeltaR);
+    //
+    // Create a 2D histogram
+    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
+
+    // Loop over entries in the TTree and fill the histograms
+    Long64_t numEntries = myTree->GetEntries();
+    for (Long64_t i = 0; i < numEntries; ++i) {
+        myTree->GetEntry(i);
+        
+        hist->Fill(KMass, LMass);
+    }
+
     // For now this method doesn't work properly
     // Create a canvas
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 800, 600);
 
-    // Create a 2D histogram
-    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
 
     // Fill the histogram with data from the TTree
     myTree->Draw("KMass:LMass >> hist_KLMass");
@@ -45,7 +63,6 @@ void MakeKMassHist(TTree* myTree) {
     TH1F* hist2 = new TH1F("hist_KMass_CosTheta_cut", "K_{s} mass (CosTheta cut)", 200, 300, 650);
     TH1F* hist3 = new TH1F("hist_KMass_AllCuts", "K_{s} mass (All cuts)", 200, 300, 650);
 
-    //hist->Sumw2();
     hist1->SetFillColor(kViolet + 6);
     hist1->SetLineColor(kBlack);
     hist2->SetFillColor(kOrange + 10);
@@ -84,16 +101,17 @@ void MakeKMassHist(TTree* myTree) {
 
     delete hist1;
     delete hist2;
+    delete hist3;
     delete legend;
     delete canvas;
 }
 
 void MakeLMassHist(TTree* myTree) {
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1080, 600);
 
-    TH1F* hist1 = new TH1F("hist_LMass", "#Lambda Invariant Mass", 200, 900, 1300);
-    TH1F* hist2 = new TH1F("hist_LMass_CosTheta_cut", "#Lambda mass (CosTheta cut)", 200, 900, 1300);
-    TH1F* hist3 = new TH1F("hist_LMass_AllCuts", "#Lambda mass (All cuts)", 200, 900, 1300);
+    TH1F* hist1 = new TH1F("hist_LMass", "#Lambda Invariant Mass", 200, 1080, 1300);
+    TH1F* hist2 = new TH1F("hist_LMass_CosTheta_cut", "#Lambda mass (CosTheta cut)", 200, 1080, 1300);
+    TH1F* hist3 = new TH1F("hist_LMass_AllCuts", "#Lambda mass (All cuts)", 200, 1080, 1300);
 
     //hist->Sumw2();
     hist1->SetFillColor(kViolet + 6);
@@ -109,7 +127,7 @@ void MakeLMassHist(TTree* myTree) {
     myTree->Draw("LMass>>hist_LMass_AllCuts", L_signal_cuts, "hist same");
 
     // TODO: Figure out if this should be m_{p^{+}#pi^{-}}
-    hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]"); 
+    hist1->GetXaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]"); 
     hist1->GetYaxis()->SetTitle("Counts per bin");
 
     // Adjust y-axis range
@@ -161,42 +179,9 @@ void MakeHists() {
         return;
     }
 
-
     MakeKMassHist(myTree);
+    MakeLMassHist(myTree);
     
-    // Declare desired branches 
-    // See m_varNames in Multiquark.h for list of available branches
-    Float_t KMass, LMass, CosTheta, Pt, DeltaR;
-    myTree->SetBranchAddress("KMass", &KMass);
-    myTree->SetBranchAddress("LMass", &LMass);
-    myTree->SetBranchAddress("CosTheta", &CosTheta);
-    myTree->SetBranchAddress("Pt", &Pt);
-    myTree->SetBranchAddress("DeltaR", &DeltaR);
-
-    // Loop over entries in the TTree and fill the histograms
-    Long64_t numEntries = myTree->GetEntries();
-    for (Long64_t i = 0; i < numEntries; ++i) {
-        myTree->GetEntry(i);
-        
-        //KMassHistogram->Fill(KMass); 
-
-        //KLMassHistogram->Fill(KMass, LMass);
-    }
-
-
-    // Create a split canvas and draw the histogram
-    TCanvas *canvas1 = new TCanvas("canvas", "Histogram Canvas", 800, 600);
-
-    // Draw KLMassHistogram on first canvas
-    //KLMassHistogram->Draw("COLZ"); // COLZ draws the histogram with a color map
-
-    // Save the histogram as an image file (optional)
-    canvas1->SaveAs("KLMass_histogram.png");
-
-    // Clean up
-    delete canvas1;
-    //delete KLMassHistogram;
-
     // Close the ROOT file
     file->Close();
     delete file;
