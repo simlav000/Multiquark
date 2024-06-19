@@ -1,4 +1,3 @@
-#include "Rtypes.h"
 #include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
@@ -7,14 +6,12 @@
 #include <TH2F.h>
 #include <TCanvas.h>
 #include <iostream>
-#include <fstream>
 #include <cstdlib>
-#include <vector>
-#include <map>
 #include <string>
 
 TH2F* MakeKLMassHist() {
-    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 0, 1000, 50, 1000, 1600);
+    //
+    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 300, 1000, 50, 1000, 1600);
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
 
