@@ -16,8 +16,8 @@ TCut cut_on_V0chi2 = Form("chi2ndf < %f", V0chi2_high);
 // ##########################
 
 // mm
-float KDeltaRxy_low = 4.0f;
-float KDeltaRxy_high = 450.0f;
+float KDeltaRxy_low = 4;
+float KDeltaRxy_high = 450;
 
 // MeV
 float KpT_low = 300;
@@ -60,19 +60,18 @@ float L_KmassBand2_low = 520;
 TCut cut_on_LDeltaRxy    = Form("DeltaR > %f && DeltaR < %f", LDeltaRxy_low, LDeltaRxy_high);
 TCut cut_on_LpT          = Form("Pt > %f", LpT_low);
 TCut cut_on_LcosTheta_3D = Form("CosTheta > %f", LcosTheta_3D_low);
-TCut cut_on_L_KmassBand1 = Form("RecMass > %f && RecMass < %f", L_KmassBand1_low, L_KmassBand1_high);
-TCut cut_on_L_KmassBand2 = Form("RecMass > %f", L_KmassBand2_low);
+TCut cut_on_L_KmassBand1 = Form("KMass > %f && KMass < %f", L_KmassBand1_low, L_KmassBand1_high);
+TCut cut_on_L_KmassBand2 = Form("KMass > %f", L_KmassBand2_low);
 TCut cut_on_L_Kmass      = cut_on_L_KmassBand1 || cut_on_L_KmassBand2;
 
 // Lmass signal region: PDG(1115.683) +- 7
 float Lmass_signal_low   = 1108.683;    // PDG -7  
 float Lmass_signal_high  = 1122.683;    // PDG +7
 
-TCut cut_on_Lmass_signal = Form("RecMassLambda > %f && RecMassLambda < %f", Lmass_signal_low, Lmass_signal_high);   
-TCut cut_on_LBmass_signal = Form("RecMassLambdaBar > %f && RecMassLambdaBar < %f", Lmass_signal_low, Lmass_signal_high);
+TCut cut_on_Lmass_signal = Form("LMass > %f && LMass < %f", Lmass_signal_low, Lmass_signal_high);   
+TCut cut_on_LBmass_signal = Form("LBarMass > %f && LBarMass < %f", Lmass_signal_low, Lmass_signal_high);
 
 
 TCut L_LB_candidate_cuts = cut_on_V0chi2 && cut_on_LDeltaRxy && cut_on_LpT && cut_on_LcosTheta_3D && cut_on_L_Kmass; // for plotting L or LB mass distribution
 TCut L_signal_cuts    = L_LB_candidate_cuts && cut_on_Lmass_signal; // for getting lambdas in mass signal region
 TCut LB_signal_cuts   = L_LB_candidate_cuts && cut_on_LBmass_signal; // for getting lambdabars in mass signal region
-
