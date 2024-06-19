@@ -1,3 +1,9 @@
+# Script to fetch the output trees of Multiquark.cxx
+# simply call this script with the correct source_path
+# and maybe even make an alias. Since the dataset.root 
+# is always called the same thing this will always fetch 
+# the latest dataset.
+
 import subprocess
 import os
 from datetime import datetime
