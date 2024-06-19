@@ -1,0 +1,1 @@
+scp [file] slavoie@choco.physics.mcgill.ca:/raid/erebos/people/slavoie/[today]/
