@@ -20,7 +20,6 @@ try:
     print(f"File renamed to: {new_file}")
 except OSError as e:
     print(f"Error renaming file: {e}")
-    exit(1)
 
 # Run the scp command to get new dataset.root
 scp_command = ["scp", source_path, destination_path]
