@@ -138,6 +138,20 @@ void MakeLMassHist(TTree* myTree) {
     delete canvas;
 }
 
+void MakeKLifeHist(TTree* myTree) {
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+
+    TH1F* hist1 = new TH1F("hist_KLife", "K^{0}_{s} Lifetime", 200, 0, 1e-08);
+
+    myTree->Draw("KLife>>hist_KLife", "", "hist"); 
+
+    canvas->SaveAs("KLife.png");
+
+    delete canvas;
+    delete hist1;
+
+}
+
 void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
@@ -162,9 +176,10 @@ void MakeHists() {
         return;
     }
 
-    MakeKMassHist(myTree);
-    MakeLMassHist(myTree);
-    MakeKLMassHist(myTree);
+    //MakeKMassHist(myTree);
+    //MakeLMassHist(myTree);
+    //MakeKLMassHist(myTree);
+    MakeKLifeHist(myTree);
     
     // Close the ROOT file
     file->Close();
