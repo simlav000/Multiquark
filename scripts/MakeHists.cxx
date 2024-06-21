@@ -147,12 +147,38 @@ void MakeKLifeHist(TTree* myTree) {
 
     myTree->Draw("KLife>>hist_KLife", "", "hist"); 
 
+
+    // Format: TF1("name", fit_func, lowlim, highlim, nparams)
+    TF1 *KLifeFit = new TF1("KLifeFit", lifetime_fit_2exp, 1e-9, 1e-08, 5);
+
+
+    // Set Parameter Names
+    KLifeFit->SetParName(0, "C0");
+    KLifeFit->SetParName(1, "t_b");
+    KLifeFit->SetParName(2, "Cb");
+    KLifeFit->SetParName(3, "t_s");
+    KLifeFit->SetParName(4, "Cs");
+
+    KLifeFit->SetParameter(1, 1.67e-08); // Kshort lifetime PDG
+    KLifeFit->SetParameter(3, 0.895e-10); // Kshort lifetime PDG
+
+    
+    KLifeFit->SetParLimits(0, 0, 1e6); // C0
+    KLifeFit->SetParLimits(1, 0, 2e-08); // t_b
+    KLifeFit->SetParLimits(2, 0, 1e6); // Cb
+    KLifeFit->SetParLimits(3, 1e-12, 1.5e-10); // t_s 
+    KLifeFit->SetParLimits(4, 0, 1e6); // Cs
+
+    KLifeFit->SetLineColor(kBlue);
+    KLifeFit->SetLineWidth(2);
+
+    hist1->Fit("KLifeFit", "R");
+
+    KLifeFit->Draw("SAME");
+
     canvas->SaveAs("KLife.png");
 
-    TF1 *KLifeFit = new TF1("KLifeFit", lifetime_fit_1exp, 1e-08, 9e-08, 3);
-    KLifeFit->SetParNames("C_0", "C_A", "KLife");
-
-
+    delete KLifeFit;
     delete canvas;
     delete hist1;
 
@@ -182,9 +208,9 @@ void MakeHists() {
         return;
     }
 
-    MakeKMassHist(myTree);
-    MakeLMassHist(myTree);
-    MakeKLMassHist(myTree);
+    //MakeKMassHist(myTree);
+    //MakeLMassHist(myTree);
+    //MakeKLMassHist(myTree);
     MakeKLifeHist(myTree);
     
     // Close the ROOT file
