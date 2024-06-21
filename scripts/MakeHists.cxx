@@ -1,4 +1,5 @@
 #include "Cuts.h"
+#include "Fits.h"
 
 #include <TFile.h>
 #include <TTree.h>
@@ -6,6 +7,7 @@
 #include <TObjArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TF1.h>
 #include <TCanvas.h>
 #include <TCut.h>
 #include <TLegend.h>
@@ -147,6 +149,10 @@ void MakeKLifeHist(TTree* myTree) {
 
     canvas->SaveAs("KLife.png");
 
+    TF1 *KLifeFit = new TF1("KLifeFit", lifetime_fit_1exp, 1e-08, 9e-08, 3);
+    KLifeFit->SetParNames("C_0", "C_A", "KLife");
+
+
     delete canvas;
     delete hist1;
 
@@ -176,9 +182,9 @@ void MakeHists() {
         return;
     }
 
-    //MakeKMassHist(myTree);
-    //MakeLMassHist(myTree);
-    //MakeKLMassHist(myTree);
+    MakeKMassHist(myTree);
+    MakeLMassHist(myTree);
+    MakeKLMassHist(myTree);
     MakeKLifeHist(myTree);
     
     // Close the ROOT file
