@@ -1,3 +1,7 @@
 *.root
 remote.txt
 compile_flags.txt
+
+scripts/*.png
+data/
+tutorial/
