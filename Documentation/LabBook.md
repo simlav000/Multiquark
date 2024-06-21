@@ -57,3 +57,13 @@ about secondary vertices within an AnalysisBase project. Certain tools
 such as `InDetV0Finder` have been used to process the ATLAS data and make 
 such pieces of information easily accessible.
 
+## Fitting Particle Lifetime Distribution
+The lifetime distribution of particles can be fit using an exponential 
+model of the form
+$$f(t) = C_0 + C_Ae^{t/\tau_A} + C_Be^{t/\tau_B}$$
+Where $\tau_A$ is particle A's lifetime, and $\tau_B$ is the background
+lifetime. For multiple particles, such as for $K_s^0$ and $\Lambda^0$, we
+can model the lifetime fit using
+$$f(t) = C_0 + C_{K_s^0}e^{t/\tau_{K_s^0}} + C_{\Lambda^0}e^{t/\tau_{\Lambda^0}} 
++ C_Be^{t/\tau_B}$$
+
