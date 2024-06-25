@@ -143,13 +143,13 @@ void MakeLMassHist(TTree* myTree) {
 void MakeKLifeHist(TTree* myTree) {
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
-    TH1F* hist1 = new TH1F("hist_KLife", "K^{0}_{s} Lifetime", 200, 0, 1e-08);
+    TH1F* hist1 = new TH1F("hist_KLife", "K^{0}_{s} Lifetime", 100, 0, 1e-9);
 
     myTree->Draw("KLife>>hist_KLife", "", "hist"); 
 
 
     // Format: TF1("name", fit_func, lowlim, highlim, nparams)
-    TF1 *KLifeFit = new TF1("KLifeFit", lifetime_fit_2exp, 1e-9, 1e-08, 5);
+    TF1 *KLifeFit = new TF1("KLifeFit", lifetime_fit_2exp, 0, 1e-09, 5);
 
 
     // Set Parameter Names
@@ -159,15 +159,17 @@ void MakeKLifeHist(TTree* myTree) {
     KLifeFit->SetParName(3, "t_s");
     KLifeFit->SetParName(4, "Cs");
 
-    KLifeFit->SetParameter(1, 1.67e-08); // Kshort lifetime PDG
-    KLifeFit->SetParameter(3, 0.895e-10); // Kshort lifetime PDG
+    KLifeFit->SetParameter(0, 16382);
+    KLifeFit->SetParameter(1, 2.5e-10); // background lifetime PDG
+    KLifeFit->SetParameter(3, 8.965e-11); // Kshort lifetime PDG
+    KLifeFit->SetParameter(4, 500000);
 
     
-    KLifeFit->SetParLimits(0, 0, 1e6); // C0
-    KLifeFit->SetParLimits(1, 0, 2e-08); // t_b
-    KLifeFit->SetParLimits(2, 0, 1e6); // Cb
-    KLifeFit->SetParLimits(3, 1e-12, 1.5e-10); // t_s 
-    KLifeFit->SetParLimits(4, 0, 1e6); // Cs
+    //KLifeFit->SetParLimits(0, 0, 1e6); // C0
+    KLifeFit->SetParLimits(1, 1e-10, 1e-08); // t_b
+    //KLifeFit->SetParLimits(2, 0, 1e6); // Cb
+    KLifeFit->SetParLimits(3, 7e-11, 1e-10); // t_s 
+    //KLifeFit->SetParLimits(4, 0, 1e6); // Cs
 
     KLifeFit->SetLineColor(kBlue);
     KLifeFit->SetLineWidth(2);
