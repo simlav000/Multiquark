@@ -33,7 +33,7 @@ inline TCut cut_on_K_LmassBand2 = Form("LMass > %f", K_LmassBand2_low);
 inline TCut cut_on_K_Lmass      = cut_on_K_LmassBand1 || cut_on_K_LmassBand2;
 
 // Kmass signal region: PDG(497.611) +- 20
-inline float Kmass_pdg         = 497.611;
+inline float Kmass_PDG         = 497.611;
 inline float Kmass_signal_low  = 477.611;    // PDG -20
 inline float Kmass_signal_high = 517.611;    // PDG +20
 
