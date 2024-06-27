@@ -5,7 +5,6 @@
 
 // Fit Functions
 inline Double_t KMassFit(const Double_t *x, const Double_t *par){  // Kaon Fit: Voight + 2nd degree polynomial
-    //return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3] + par[4]*x[0];  // Gaussian + linear
     return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3] + par[4]*x[0] + par[5]*x[0]*x[0];  // Gaussian + 2nd order polynomial
 }
 
@@ -14,8 +13,8 @@ inline Double_t KMassFitVoigt(const Double_t *x, const Double_t *par) {
 }
 
 
-inline Double_t LMassFit(const Double_t *x, const Double_t *par){ // Lambda Fit: BreitWigner + Exponential + const
-    return par[0] + TMath::Exp(par[1]+par[2]*x[0]) + par[3]*TMath::BreitWigner(x[0],par[4],par[5]);
+inline Double_t LMassFitBreitWigner(const Double_t *x, const Double_t *par){ // Lambda Fit: BreitWigner + Exponential + const
+    return par[0]*TMath::BreitWigner(x[0],par[1],par[2]) + par[3]*TMath::Exp(par[4]*x[0]) + par[5];
 }
 
 
