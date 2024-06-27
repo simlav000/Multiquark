@@ -44,34 +44,67 @@ void MakeKLMassHist(TTree* myTree) {
 }
 
 void MakeKMassHist(TTree* myTree) {
+
+    float mass_min = 300;
+    float mass_max = 650;
+    int num_bins = 200;
+
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
-    TH1F* hist1 = new TH1F("hist_KMass", "K^{0}_{s} Invariant Mass", 200, 300, 650);
-    TH1F* hist2 = new TH1F("hist_KMass_CosTheta_cut", "K_{s} mass (CosTheta cut)", 200, 300, 650);
-    TH1F* hist3 = new TH1F("hist_KMass_AllCuts", "K_{s} mass (All cuts)", 200, 300, 650);
+    TH1F* hist1 = new TH1F("hist_KMass", "K^{0}_{s} Invariant Mass", num_bins, mass_min, mass_max);
+    TH1F* hist2 = new TH1F("hist_KMass_CosTheta_cut", "K_{s} mass (CosTheta cut)", num_bins, mass_min, mass_max);
+    TH1F* hist3 = new TH1F("hist_KMass_AllCuts", "K_{s} mass (All cuts)", num_bins, mass_min, mass_max);
 
     hist1->SetFillColor(kViolet + 6);
     hist1->SetLineColor(kBlack);
+    hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
+    hist1->GetYaxis()->SetTitle("Counts per bin");
+    hist1->SetMinimum(0); // Needed to see signal after cuts
+    hist1->SetStats(false); // Get rid of stats box
+
     hist2->SetFillColor(kOrange + 10);
     hist2->SetLineColor(kBlack);
+
     hist3->SetFillColor(kSpring - 2);
     hist3->SetLineColor(kBlack);
 
-
     myTree->Draw("KMass>>hist_KMass", "", "hist"); 
     myTree->Draw("KMass>>hist_KMass_CosTheta_cut", cut_on_KcosTheta_3D, "hist same");
-    myTree->Draw("KMass>>hist_KMass_AllCuts", K_signal_cuts, "hist same");
+    myTree->Draw("KMass>>hist_KMass_AllCuts", K_candidate_cuts, "hist same");
 
-    hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
-    hist1->GetYaxis()->SetTitle("Counts per bin");
+    TF1 *NoCutFit    = new TF1("NoCutFit", KMassFit, mass_min + 125, mass_max, 7);
+    TF1 *CosThetaFit = new TF1("CosThetaFit", KMassFitVoigt, mass_min, mass_max, 7);
+    TF1 *AllCutsFit  = new TF1("AllCutsFit", KMassFitVoigt, mass_min, mass_max, 7);
 
-    // Adjust y-axis range
-    hist1->SetMinimum(0);
+    // Set Parameter Names and values
+    // A*Gauss(mu, sigma) + c + bx + ax^2
+    // A = 0, mu = 1, sigma = 2, ...
+    NoCutFit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
+    NoCutFit->SetParameter(1, Kmass_pdg);
+    NoCutFit->SetParLimits(0, 0, 60000);
+    NoCutFit->SetLineColor(kViolet);
+    NoCutFit->SetLineWidth(2);
 
-    // Get rid of little stats box
-    hist1->SetStats(false);
-    hist2->SetStats(false);
-    hist3->SetStats(false);
+    CosThetaFit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
+    CosThetaFit->SetParLimits(0, 0, 600000);
+    CosThetaFit->SetParameter(1, Kmass_pdg);
+    CosThetaFit->SetLineColor(kOrange + 1);
+    CosThetaFit->SetLineWidth(2);
+
+    AllCutsFit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
+    AllCutsFit->SetParLimits(0, 0, 600000);
+    AllCutsFit->SetParameter(1, Kmass_pdg);
+    AllCutsFit->SetLineColor(kGreen - 1);
+    AllCutsFit->SetLineWidth(2);
+
+
+    hist1->Fit("NoCutFit", "R");
+    hist2->Fit("CosThetaFit", "R");
+    hist3->Fit("AllCutsFit", "R");
+
+    NoCutFit->Draw("SAME");
+    AllCutsFit->Draw("SAME");
+    CosThetaFit->Draw("SAME");
 
     // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
@@ -87,6 +120,9 @@ void MakeKMassHist(TTree* myTree) {
     delete hist1;
     delete hist2;
     delete hist3;
+    delete NoCutFit;
+    delete CosThetaFit;
+    delete AllCutsFit;
     delete legend;
     delete canvas;
 }
@@ -212,7 +248,6 @@ void MakeKLifeHist(TTree* myTree) {
     signal->SetLineColor(kRed);
     signal->Draw("SAME");
         
-    // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
     legend->AddEntry(hist, "Data", "f"); // f = fill 
     legend->AddEntry(KLifeFit, "Signal + Background", "l"); // l = line
@@ -260,12 +295,12 @@ void MakeHists() {
         return;
     }
 
-    //MakeKMassHist(myTree);
+    MakeKMassHist(myTree);
     //MakeLMassHist(myTree);
     //MakeKLMassHist(myTree);
-    MakeKLifeHist(myTree);
+    //MakeKLifeHist(myTree);
     
-    // Close the ROOT file
+    // Clean up
     file->Close();
     delete file;
 }
