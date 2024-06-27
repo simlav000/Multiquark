@@ -45,8 +45,10 @@ void MakeKLMassHist(TTree* myTree) {
 
 void MakeKMassHist(TTree* myTree) {
 
+    // MeV
     float mass_min = 300;
     float mass_max = 650;
+
     int num_bins = 200;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
@@ -59,7 +61,7 @@ void MakeKMassHist(TTree* myTree) {
     hist1->SetLineColor(kBlack);
     hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist1->GetYaxis()->SetTitle("Counts per bin");
-    hist1->SetMinimum(0); // Needed to see signal after cuts
+    hist1->SetMinimum(0);   // Needed to see signal after cuts
     hist1->SetStats(false); // Get rid of stats box
 
     hist2->SetFillColor(kOrange + 10);
@@ -72,38 +74,38 @@ void MakeKMassHist(TTree* myTree) {
     myTree->Draw("KMass>>hist_KMass_CosTheta_cut", cut_on_KcosTheta_3D, "hist same");
     myTree->Draw("KMass>>hist_KMass_AllCuts", K_candidate_cuts, "hist same");
 
-    TF1 *NoCutFit    = new TF1("NoCutFit", KMassFit, mass_min + 125, mass_max, 7);
+    TF1 *ZeroCutsFit    = new TF1("ZeroCutsFit", KMassFit, mass_min + 125, mass_max, 7);
     TF1 *CosThetaFit = new TF1("CosThetaFit", KMassFitVoigt, mass_min, mass_max, 7);
-    TF1 *AllCutsFit  = new TF1("AllCutsFit", KMassFitVoigt, mass_min, mass_max, 7);
+    TF1 *FullCutsFit  = new TF1("FullCutsFit", KMassFitVoigt, mass_min, mass_max, 7);
 
     // Set Parameter Names and values
     // A*Gauss(mu, sigma) + c + bx + ax^2
     // A = 0, mu = 1, sigma = 2, ...
-    NoCutFit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
-    NoCutFit->SetParameter(1, Kmass_pdg);
-    NoCutFit->SetParLimits(0, 0, 60000);
-    NoCutFit->SetLineColor(kViolet);
-    NoCutFit->SetLineWidth(2);
+    ZeroCutsFit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
+    ZeroCutsFit->SetParameter(1, Kmass_PDG);
+    ZeroCutsFit->SetParLimits(0, 0, 60000);
+    ZeroCutsFit->SetLineColor(kViolet);
+    ZeroCutsFit->SetLineWidth(2);
 
     CosThetaFit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
     CosThetaFit->SetParLimits(0, 0, 600000);
-    CosThetaFit->SetParameter(1, Kmass_pdg);
+    CosThetaFit->SetParameter(1, Kmass_PDG);
     CosThetaFit->SetLineColor(kOrange + 1);
     CosThetaFit->SetLineWidth(2);
 
-    AllCutsFit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
-    AllCutsFit->SetParLimits(0, 0, 600000);
-    AllCutsFit->SetParameter(1, Kmass_pdg);
-    AllCutsFit->SetLineColor(kGreen - 1);
-    AllCutsFit->SetLineWidth(2);
+    FullCutsFit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
+    FullCutsFit->SetParLimits(0, 0, 600000);
+    FullCutsFit->SetParameter(1, Kmass_PDG);
+    FullCutsFit->SetLineColor(kGreen - 1);
+    FullCutsFit->SetLineWidth(2);
 
 
-    hist1->Fit("NoCutFit", "R");
+    hist1->Fit("ZeroCutsFit", "R");
     hist2->Fit("CosThetaFit", "R");
-    hist3->Fit("AllCutsFit", "R");
+    hist3->Fit("FullCutsFit", "R");
 
-    NoCutFit->Draw("SAME");
-    AllCutsFit->Draw("SAME");
+    ZeroCutsFit->Draw("SAME");
+    FullCutsFit->Draw("SAME");
     CosThetaFit->Draw("SAME");
 
     // Absolute legend
@@ -120,44 +122,77 @@ void MakeKMassHist(TTree* myTree) {
     delete hist1;
     delete hist2;
     delete hist3;
-    delete NoCutFit;
+    delete ZeroCutsFit;
     delete CosThetaFit;
-    delete AllCutsFit;
+    delete FullCutsFit;
     delete legend;
     delete canvas;
 }
 
 void MakeLMassHist(TTree* myTree) {
+
+    // MeV
+    float mass_min = 1080;
+    float mass_max = 1300;
+
+    int num_bins = 200;
+
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1080, 600);
 
-    TH1F* hist1 = new TH1F("hist_LMass", "#Lambda Invariant Mass", 200, 1080, 1300);
-    TH1F* hist2 = new TH1F("hist_LMass_CosTheta_cut", "#Lambda mass (CosTheta cut)", 200, 1080, 1300);
-    TH1F* hist3 = new TH1F("hist_LMass_AllCuts", "#Lambda mass (All cuts)", 200, 1080, 1300);
+    TH1F* hist1 = new TH1F("hist_LMass", "#Lambda Invariant Mass", num_bins, mass_min, mass_max);
+    TH1F* hist2 = new TH1F("hist_LMass_CosTheta_cut", "#Lambda mass (CosTheta cut)", num_bins, mass_min, mass_max);
+    TH1F* hist3 = new TH1F("hist_LMass_AllCuts", "#Lambda mass (All cuts)", num_bins, mass_min, mass_max);
 
-    //hist->Sumw2();
     hist1->SetFillColor(kViolet + 6);
     hist1->SetLineColor(kBlack);
+    hist1->GetXaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]"); 
+    hist1->GetYaxis()->SetTitle("Counts per bin");
+    hist1->SetMinimum(0);   // Needed to see signal after cuts
+    hist1->SetStats(false); // Get rid of stats box
+
     hist2->SetFillColor(kOrange + 10);
     hist2->SetLineColor(kBlack);
+
     hist3->SetFillColor(kSpring - 2);
     hist3->SetLineColor(kBlack);
 
 
     myTree->Draw("LMass>>hist_LMass", "", "hist"); 
     myTree->Draw("LMass>>hist_LMass_CosTheta_cut", cut_on_LcosTheta_3D, "hist same");
-    myTree->Draw("LMass>>hist_LMass_AllCuts", L_signal_cuts, "hist same");
+    myTree->Draw("LMass>>hist_LMass_AllCuts", L_LB_candidate_cuts, "hist same");
 
-    hist1->GetXaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]"); 
-    hist1->GetYaxis()->SetTitle("Counts per bin");
+    TF1 *ZeroCutsFit    = new TF1("ZeroCutsFit", LMassFit, mass_min, mass_max, 6);
+    TF1 *CosThetaFit = new TF1("CosThetaFit", LMassFit, mass_min, mass_max, 6);
+    TF1 *FullCutsFit  = new TF1("FullCutsFit", LMassFit, mass_min, mass_max, 6);
 
-    // Adjust y-axis range
-    hist1->SetMinimum(0);
 
-    // Get rid of little stats box
-    hist1->SetStats(false);
-    hist2->SetStats(false);
-    hist3->SetStats(false);
+    // Set Parameter Names and values
+    ZeroCutsFit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
+    ZeroCutsFit->SetParameter(4, Lmass_PDG);
+    ZeroCutsFit->SetParLimits(3, 0, 60000);
+    ZeroCutsFit->SetLineColor(kViolet);
+    ZeroCutsFit->SetLineWidth(2);
 
+    CosThetaFit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
+    CosThetaFit->SetParLimits(3, 0, 600000);
+    CosThetaFit->SetParameter(4, Lmass_PDG);
+    CosThetaFit->SetLineColor(kOrange + 1);
+    CosThetaFit->SetLineWidth(2);
+
+    FullCutsFit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
+    FullCutsFit->SetParLimits(3, 0, 600000);
+    FullCutsFit->SetParameter(4, Kmass_PDG);
+    FullCutsFit->SetLineColor(kGreen - 1);
+    FullCutsFit->SetLineWidth(2);
+
+    hist1->Fit("ZeroCutsFit", "R");
+    hist2->Fit("CosThetaFit", "R");
+    hist3->Fit("FullCutsFit", "R");
+
+    ZeroCutsFit->Draw("SAME");
+    CosThetaFit->Draw("SAME");
+    FullCutsFit->Draw("SAME");
+    
     // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
     legend->AddEntry(hist1, "Full distribution", "f");
@@ -295,8 +330,8 @@ void MakeHists() {
         return;
     }
 
-    MakeKMassHist(myTree);
-    //MakeLMassHist(myTree);
+    //MakeKMassHist(myTree);
+    MakeLMassHist(myTree);
     //MakeKLMassHist(myTree);
     //MakeKLifeHist(myTree);
     
