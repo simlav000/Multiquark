@@ -101,9 +101,13 @@ inline std::string floatToString(float v, int p) {
 inline void SetCutNames() {
     // Used for automatically printing cut descriptions in histogram legend. 
     no_cut.SetName("No cuts");
+
     cut_on_KcosTheta_3D.SetName(("Cos(#theta) > " + floatToString(KcosTheta_3D_low, 3)).c_str());
+
     K_candidate_cuts.SetName("All cuts");
+
     KCut2.SetName(("p_T > " + floatToString(KpT_low, 2) + " MeV").c_str());
+
     KCut3.SetName((floatToString(KDeltaRxy_low, 2) + " mm < R > " + floatToString(KDeltaRxy_high, 2) + " mm").c_str());
 
 }
