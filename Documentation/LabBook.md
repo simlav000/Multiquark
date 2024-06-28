@@ -41,11 +41,10 @@ $$ d = ct\gamma\beta$$
 where $\beta = v/c$ and $\gamma = 1/\sqrt{(1-\beta^2)}$, and $d$ is the distance
 between the primary and secondary vertices. Using the relativistic
 momentum $p = \gamma m v$, we can rearrange this to obtain:
-$$ t = \frac{d}{c\gamma\beta} = \frac{dm}{pc} $$
+$$ t = \frac{dm}{pc} $$
 Thus we can determine the lifetime of a particle using nothing but the distance
-between primary and secondary vertices, the mass of the particle, and it's 3D 
-momentum, which are all easily accessible using: 
-  - `SG::AuxElement::ConstAccessor<float> getKMass("Kshort_mass");`
+between primary and secondary vertices, the mass of the particle (as given by
+the PDG), and it's 3D momentum, which is easily accessible using: 
   - `SG::AuxElement::ConstAccessor<float> getPx( "px" );`
   - `SG::AuxElement::ConstAccessor<float> getPy( "py" );`
   - `SG::AuxElement::ConstAccessor<float> getPz( "pz" );`
@@ -60,10 +59,16 @@ such pieces of information easily accessible.
 ## Fitting Particle Lifetime Distribution
 The lifetime distribution of particles can be fit using an exponential 
 model of the form
-$$f(t) = C_0 + C_Ae^{t/\tau_A} + C_Be^{t/\tau_B}$$
-Where $\tau_A$ is particle A's lifetime, and $\tau_B$ is the background
-lifetime. For multiple particles, such as for $K_s^0$ and $\Lambda^0$, we
-can model the lifetime fit using
-$$f(t) = C_0 + C_{K_s^0}e^{t/\tau_{K_s^0}} + C_{\Lambda^0}e^{t/\tau_{\Lambda^0}} 
-+ C_Be^{t/\tau_B}$$
+$$f(t) = C_Ae^{t/\tau_A} + C_Be^{t/\tau_B} + C_0$$
+Where $C_A$ and $\tau_A$ model particle A's lifetime, and $C_0$, $C_A$ and 
+$\tau_B$ models the background lifetime.
 
+## $K^0_s$ and $\Lambda^0$ Invariant Mass Plots
+Each secondary vertex is assigned a kaon and lambda mass. These
+two quantities can be plotted to obtain invariant mass distributions
+which contain a distinct signal (seen as a spike) and a background. 
+To isolate this signal, certain cuts can be performed to properly 
+identify the kaons and lambdas.
+
+<!--TODO: Use correct image -->
+![Kaon invariant mass histogram](../Histograms/20240618/KMass_Before_and_After_Cuts.png)
