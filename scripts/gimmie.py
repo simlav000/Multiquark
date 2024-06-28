@@ -13,7 +13,7 @@ source_path = "slavoie@lxplus.cern.ch:/afs/cern.ch/user/s/slavoie/private/MultiQ
 home = str(os.getenv("HOME"))
 destination_path = home + "/McGill/Multiquark/data/"
 
-# Get the current datetime in DDMMYYYY_HHMM format
+# Get the current datetime in YYYYMMDD format
 current_datetime = datetime.now().strftime("%Y%m%d_%H%M")
 
 # Define the original and new file names
