@@ -85,27 +85,30 @@ void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
     Cut1Fit->SetParLimits(0, 0, 600000); // A > 0
     Cut1Fit->SetParameter(1, Kmass_PDG);
     Cut1Fit->SetParLimits(2, 0, 100);    // sigma > 0
-    Cut1Fit->SetLineColor(kViolet);
+    Cut1Fit->SetLineColor(kMagenta + 4);
     Cut1Fit->SetLineWidth(2);
 
     Cut2Fit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
     Cut2Fit->SetParLimits(0, 0, 600000);
     Cut2Fit->SetParameter(1, Kmass_PDG);
     Cut2Fit->SetParLimits(2, 0, 100);
-    Cut2Fit->SetLineColor(kOrange + 1);
+    Cut2Fit->SetLineColor(kOrange);
     Cut2Fit->SetLineWidth(2);
 
     Cut3Fit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
     Cut3Fit->SetParLimits(0, 0, 600000);
     Cut3Fit->SetParameter(1, Kmass_PDG);
     Cut3Fit->SetParLimits(2, 0, 100);
-    Cut3Fit->SetLineColor(kGreen - 1);
+    Cut3Fit->SetLineColor(kGreen + 4);
     Cut3Fit->SetLineWidth(2);
-
 
     hist1->Fit("Cut1Fit", "R");
     hist2->Fit("Cut2Fit", "R");
     hist3->Fit("Cut3Fit", "R");
+
+    Cut1Fit->SetNpx(1000);
+    Cut3Fit->SetNpx(1000);
+    Cut2Fit->SetNpx(1000);
 
     Cut1Fit->Draw("SAME");
     Cut3Fit->Draw("SAME");
@@ -115,8 +118,11 @@ void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
     // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
     legend->AddEntry(hist1, Cut1.GetName(), "f");
+    legend->AddEntry(Cut1Fit, "Cosine cut fit", "l"); 
     legend->AddEntry(hist2, Cut2.GetName(), "f");
+    legend->AddEntry(Cut2Fit, "Cosine and p_T cut fit", "l"); 
     legend->AddEntry(hist3, Cut3.GetName(), "f");
+    legend->AddEntry(Cut3Fit, "Cosine, p_T and R cut fit", "l"); 
     legend->Draw();
 
     canvas->SaveAs("KMass.png");
