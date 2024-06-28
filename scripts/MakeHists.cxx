@@ -43,7 +43,7 @@ void MakeKLMassHist(TTree* myTree) {
     delete canvas;
 }
 
-void MakeKMassHist(TTree* myTree) {
+void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
 
     // MeV
     float mass_min = 300;
@@ -70,51 +70,53 @@ void MakeKMassHist(TTree* myTree) {
     hist3->SetFillColor(kSpring - 2);
     hist3->SetLineColor(kBlack);
 
-    myTree->Draw("KMass>>hist_KMass", "", "hist"); 
-    myTree->Draw("KMass>>hist_KMass_CosTheta_cut", cut_on_KcosTheta_3D, "hist same");
-    myTree->Draw("KMass>>hist_KMass_AllCuts", K_candidate_cuts, "hist same");
+    myTree->Draw("KMass>>hist_KMass", Cut1, "hist"); 
+    myTree->Draw("KMass>>hist_KMass_CosTheta_cut", Cut2, "hist same");
+    myTree->Draw("KMass>>hist_KMass_AllCuts", Cut3, "hist same");
 
-    TF1 *ZeroCutsFit    = new TF1("ZeroCutsFit", KMassFit, mass_min + 125, mass_max, 7);
-    TF1 *CosThetaFit = new TF1("CosThetaFit", KMassFitVoigt, mass_min, mass_max, 7);
-    TF1 *FullCutsFit  = new TF1("FullCutsFit", KMassFitVoigt, mass_min, mass_max, 7);
+    TF1 *Cut1Fit = new TF1("Cut1Fit", KMassFit, mass_min, mass_max, 6);
+    TF1 *Cut2Fit = new TF1("Cut2Fit", KMassFit, mass_min, mass_max, 6);
+    TF1 *Cut3Fit = new TF1("Cut3Fit", KMassFit, mass_min, mass_max, 6);
 
     // Set Parameter Names and values
     // A*Gauss(mu, sigma) + c + bx + ax^2
     // A = 0, mu = 1, sigma = 2, ...
-    ZeroCutsFit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
-    ZeroCutsFit->SetParameter(1, Kmass_PDG);
-    ZeroCutsFit->SetParLimits(0, 0, 60000);
-    ZeroCutsFit->SetLineColor(kViolet);
-    ZeroCutsFit->SetLineWidth(2);
+    Cut1Fit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
+    Cut1Fit->SetParLimits(0, 0, 600000); // A > 0
+    Cut1Fit->SetParameter(1, Kmass_PDG);
+    Cut1Fit->SetParLimits(2, 0, 100);    // sigma > 0
+    Cut1Fit->SetLineColor(kViolet);
+    Cut1Fit->SetLineWidth(2);
 
-    CosThetaFit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
-    CosThetaFit->SetParLimits(0, 0, 600000);
-    CosThetaFit->SetParameter(1, Kmass_PDG);
-    CosThetaFit->SetLineColor(kOrange + 1);
-    CosThetaFit->SetLineWidth(2);
+    Cut2Fit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
+    Cut2Fit->SetParLimits(0, 0, 600000);
+    Cut2Fit->SetParameter(1, Kmass_PDG);
+    Cut2Fit->SetParLimits(2, 0, 100);
+    Cut2Fit->SetLineColor(kOrange + 1);
+    Cut2Fit->SetLineWidth(2);
 
-    FullCutsFit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
-    FullCutsFit->SetParLimits(0, 0, 600000);
-    FullCutsFit->SetParameter(1, Kmass_PDG);
-    FullCutsFit->SetLineColor(kGreen - 1);
-    FullCutsFit->SetLineWidth(2);
+    Cut3Fit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
+    Cut3Fit->SetParLimits(0, 0, 600000);
+    Cut3Fit->SetParameter(1, Kmass_PDG);
+    Cut3Fit->SetParLimits(2, 0, 100);
+    Cut3Fit->SetLineColor(kGreen - 1);
+    Cut3Fit->SetLineWidth(2);
 
 
-    hist1->Fit("ZeroCutsFit", "R");
-    hist2->Fit("CosThetaFit", "R");
-    hist3->Fit("FullCutsFit", "R");
+    hist1->Fit("Cut1Fit", "R");
+    hist2->Fit("Cut2Fit", "R");
+    hist3->Fit("Cut3Fit", "R");
 
-    ZeroCutsFit->Draw("SAME");
-    FullCutsFit->Draw("SAME");
-    CosThetaFit->Draw("SAME");
+    Cut1Fit->Draw("SAME");
+    Cut3Fit->Draw("SAME");
+    Cut2Fit->Draw("SAME");
+
 
     // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
-    legend->AddEntry(hist1, "Full distribution", "f");
-    std::string label = "Cos(#theta) > " + std::to_string(KcosTheta_3D_low);
-    const char* entry = label.c_str();
-    legend->AddEntry(hist2, entry, "f");
-    legend->AddEntry(hist3, "All cuts", "f");
+    legend->AddEntry(hist1, Cut1.GetName(), "f");
+    legend->AddEntry(hist2, Cut2.GetName(), "f");
+    legend->AddEntry(hist3, Cut3.GetName(), "f");
     legend->Draw();
 
     canvas->SaveAs("KMass.png");
@@ -122,9 +124,9 @@ void MakeKMassHist(TTree* myTree) {
     delete hist1;
     delete hist2;
     delete hist3;
-    delete ZeroCutsFit;
-    delete CosThetaFit;
-    delete FullCutsFit;
+    delete Cut1Fit;
+    delete Cut2Fit;
+    delete Cut3Fit;
     delete legend;
     delete canvas;
 }
@@ -161,37 +163,37 @@ void MakeLMassHist(TTree* myTree) {
     myTree->Draw("LMass>>hist_LMass_CosTheta_cut", cut_on_LcosTheta_3D, "hist same");
     myTree->Draw("LMass>>hist_LMass_AllCuts", L_LB_candidate_cuts, "hist same");
 
-    TF1 *ZeroCutsFit    = new TF1("ZeroCutsFit", LMassFit, mass_min, mass_max, 6);
-    TF1 *CosThetaFit = new TF1("CosThetaFit", LMassFit, mass_min, mass_max, 6);
-    TF1 *FullCutsFit  = new TF1("FullCutsFit", LMassFit, mass_min, mass_max, 6);
+    TF1 *Cut1Fit    = new TF1("Cut1Fit", LMassFitBreitWigner, mass_min, mass_max, 6);
+    TF1 *Cut2Fit = new TF1("Cut2Fit", LMassFitBreitWigner, mass_min, mass_max, 6);
+    TF1 *Cut3Fit  = new TF1("Cut3Fit", LMassFitBreitWigner, mass_min, mass_max, 6);
 
 
     // Set Parameter Names and values
-    ZeroCutsFit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
-    ZeroCutsFit->SetParameter(4, Lmass_PDG);
-    ZeroCutsFit->SetParLimits(3, 0, 60000);
-    ZeroCutsFit->SetLineColor(kViolet);
-    ZeroCutsFit->SetLineWidth(2);
+    Cut1Fit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
+    Cut1Fit->SetParameter(4, Lmass_PDG);
+    Cut1Fit->SetParLimits(3, 0, 60000);
+    Cut1Fit->SetLineColor(kViolet);
+    Cut1Fit->SetLineWidth(2);
 
-    CosThetaFit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
-    CosThetaFit->SetParLimits(3, 0, 600000);
-    CosThetaFit->SetParameter(4, Lmass_PDG);
-    CosThetaFit->SetLineColor(kOrange + 1);
-    CosThetaFit->SetLineWidth(2);
+    Cut2Fit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
+    Cut2Fit->SetParLimits(3, 0, 600000);
+    Cut2Fit->SetParameter(4, Lmass_PDG);
+    Cut2Fit->SetLineColor(kOrange + 1);
+    Cut2Fit->SetLineWidth(2);
 
-    FullCutsFit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
-    FullCutsFit->SetParLimits(3, 0, 600000);
-    FullCutsFit->SetParameter(4, Kmass_PDG);
-    FullCutsFit->SetLineColor(kGreen - 1);
-    FullCutsFit->SetLineWidth(2);
+    Cut3Fit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
+    Cut3Fit->SetParLimits(3, 0, 600000);
+    Cut3Fit->SetParameter(4, Kmass_PDG);
+    Cut3Fit->SetLineColor(kGreen - 1);
+    Cut3Fit->SetLineWidth(2);
 
-    hist1->Fit("ZeroCutsFit", "R");
-    hist2->Fit("CosThetaFit", "R");
-    hist3->Fit("FullCutsFit", "R");
+    hist1->Fit("Cut1Fit", "R");
+    hist2->Fit("Cut2Fit", "R");
+    hist3->Fit("Cut3Fit", "R");
 
-    ZeroCutsFit->Draw("SAME");
-    CosThetaFit->Draw("SAME");
-    FullCutsFit->Draw("SAME");
+    Cut1Fit->Draw("SAME");
+    Cut2Fit->Draw("SAME");
+    Cut3Fit->Draw("SAME");
     
     // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
@@ -212,8 +214,8 @@ void MakeLMassHist(TTree* myTree) {
 
 void MakeKLifeHist(TTree* myTree) {
 
-    float t_min = 0;
-    float t_max = 0.7e-9;
+    float t_min = 0.025e-9;
+    float t_max = 0.22e-9;
     int num_bins = 100;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
@@ -221,6 +223,7 @@ void MakeKLifeHist(TTree* myTree) {
     TH1F* hist = new TH1F("hist_KLife", "K^{0}_{s} Lifetime", num_bins, t_min, t_max);
     hist->GetXaxis()->SetTitle("Time [s]"); 
     hist->GetYaxis()->SetTitle("Counts per bin");
+    hist->SetMinimum(0);
     hist->SetStats(false);
 
     myTree->Draw("KLife>>hist_KLife", "", "hist"); 
@@ -297,6 +300,10 @@ void MakeKLifeHist(TTree* myTree) {
     fitModel.SetTextSize(0.03);
     fitModel.DrawLatex(0.35, 0.7, "C_{0} + C_{b}e^{-t/#tau_{b}} + C_{s}e^{-t/#tau_{s}}");
 
+    // Setting to log scale to easily see exponential region turn linear 
+    //gPad->SetLogy();
+    //canvas->Update();
+
     canvas->SaveAs("KLife.png");
     
     delete legend;
@@ -330,8 +337,10 @@ void MakeHists() {
         return;
     }
 
-    //MakeKMassHist(myTree);
-    MakeLMassHist(myTree);
+    SetCutNames();
+
+    MakeKMassHist(myTree, cut_on_KcosTheta_3D, KCut2, KCut3);
+    //MakeLMassHist(myTree);
     //MakeKLMassHist(myTree);
     //MakeKLifeHist(myTree);
     
