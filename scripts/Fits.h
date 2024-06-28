@@ -4,12 +4,8 @@
 #include <TMath.h>
 
 // Fit Functions
-inline Double_t KMassFit(const Double_t *x, const Double_t *par){  // Kaon Fit: Voight + 2nd degree polynomial
+inline Double_t KMassFit(const Double_t *x, const Double_t *par){
     return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3] + par[4]*x[0] + par[5]*x[0]*x[0];  // Gaussian + 2nd order polynomial
-}
-
-inline Double_t KMassFitVoigt(const Double_t *x, const Double_t *par) {
-    return par[0]*TMath::Voigt(x[0]-par[1], par[2], par[3], 4) + par[4] + par[5]*x[0] + par[6]*x[0]*x[0];   // Voight + 2nd degree polynomial 
 }
 
 
