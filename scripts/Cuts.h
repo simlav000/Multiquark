@@ -1,6 +1,5 @@
+#include "Utilities.h"
 #include <TCut.h>
-#include <iomanip>
-#include <string>
 
 /*                      *\
   Cuts common to all V0s
@@ -87,12 +86,6 @@ inline TCut LB_signal_cuts   = L_LB_candidate_cuts && cut_on_LBmass_signal; // f
 // Makes it so you can change which cut you perform and the legend gets
 // updated accordingly.
 
-// Utility to convert inline float to string with specific precision
-inline std::string floatToString(float v, int p) {
-    std::stringstream ss;
-    ss << std::fixed << std::setprecision(p) << v;
-    return ss.str();
-}
 
 inline void SetCutNames() {
     no_cut.SetName("No cuts");
