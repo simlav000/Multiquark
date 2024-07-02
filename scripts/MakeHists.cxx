@@ -1,7 +1,7 @@
 // Custom includes
 #include "Cuts.h"
 #include "Particles.h"
-#include "RtypesCore.h"
+#include "Utilities.h"
 
 // ROOT includes
 #include <TBranch.h>
@@ -13,26 +13,13 @@
 #include <TH2F.h>
 #include <TLatex.h>
 #include <TLegend.h>
-#include <TMath.h>
 #include <TStyle.h>
 #include <TTree.h>
 
 // C++ includes
-#include <cmath>
 #include <cstdlib>
-#include <iostream>
-#include <string>
 
-std::string FillHist(std::string var_name, std::string hist_name) {
-    std::string formatted = var_name + ">>" + hist_name;
-    return formatted;
-}
 
-void printSignalArea(Double_t A, Double_t sigma) {
-    Double_t sqrt_two_pi = sqrt(TMath::TwoPi());
-    Double_t AreaEstimate = sqrt_two_pi * A * sigma;
-    std::cout << "Area: " << AreaEstimate << std::endl;
-}
 
 void MakeKLMassHist(TTree* myTree) {
 
@@ -91,9 +78,11 @@ void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2
     myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut2").c_str(), Cut2, "hist same"); 
     myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut3").c_str(), Cut3, "hist same"); 
 
+    //-------------------------------------------------------------------------
     // Everything is more or less general except for the fitting section 
     // You'll have to edit this part depending on your fits and particles
-    TF1 *Cut1Fit = new TF1("Cut1Fit", KMassFit, 1090, 1150, 6);
+
+    TF1 *Cut1Fit = new TF1("Cut1Fit", KMassFit, 1090, 1145, 6);
     TF1 *Cut2Fit = new TF1("Cut2Fit", KMassFit, 1090, 1150, 6);
     TF1 *Cut3Fit = new TF1("Cut3Fit", KMassFit, 1090, 1150, 6);
 
@@ -120,6 +109,7 @@ void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2
     Cut3Fit->SetParLimits(2, 0, 100);
     Cut3Fit->SetLineColor(kGreen + 4);
     Cut3Fit->SetLineWidth(2);
+    //-------------------------------------------------------------------------
 
     hist1->Fit("Cut1Fit", "R");
     hist2->Fit("Cut2Fit", "R");
@@ -257,6 +247,12 @@ void MakeKLifeHist(TTree* myTree) {
     fitModel.SetTextSize(0.03);
     fitModel.DrawLatex(0.35, 0.7, "C_{0} + C_{b}e^{-t/#tau_{b}} + C_{s}e^{-t/#tau_{s}}");
 
+    TLatex lifetimeResult;
+    lifetimeResult.SetNDC();
+    lifetimeResult.SetTextSize(0.03);
+    std::string lifetimeLabel = "#tau_{s} = " + floatToString(t_k, 3, true);
+    lifetimeResult.DrawLatex(0.5, 0.5, lifetimeLabel.c_str());
+
     // Setting to log scale to easily see exponential region turn linear 
     //gPad->SetLogy();
     //canvas->Update();
@@ -302,10 +298,10 @@ void MakeHists() {
     Kaon k;
     Lambda l;
 
-    MakeMassHist(&l, myTree, 100, cut_on_KcosTheta_3D, KCut2, KCut3);
+    //MakeMassHist(&l, myTree, 200, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
     //MakeLMassHist(myTree);
     //MakeKLMassHist(myTree);
-    //MakeKLifeHist(myTree);
+    MakeKLifeHist(myTree);
     
     // Clean up
     file->Close();
