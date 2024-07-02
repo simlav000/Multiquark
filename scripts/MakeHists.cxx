@@ -19,7 +19,28 @@
 // C++ includes
 #include <cstdlib>
 
+void MakeInvMassHist(Particle* p, TTree* myTree, int num_bins) {
+    float mass_min = p->mass_min;
+    float mass_max = p->mass_max;
 
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+
+    std::string hist_name = p->name_formatted + " Invariant Mass Distribution";
+    TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
+
+    hist->SetFillColor(kTeal);
+    hist->SetLineColor(kBlack);
+    hist->GetXaxis()->SetTitle((p->invariant_mass_label).c_str());
+    hist->GetYaxis()->SetTitle("Counts per bin");
+    hist->SetStats(false);
+
+    myTree->Draw(FillHist(p->mass, "hist").c_str(), "", "hist");
+
+    canvas->SaveAs("KKMass.png");
+
+    delete hist;
+    delete canvas;
+}
 
 void MakeKLMassHist(TTree* myTree) {
 
@@ -297,11 +318,12 @@ void MakeHists() {
     // See Particles.h, provides default data for kaon and lambda plots
     Kaon k;
     Lambda l;
-
+    Tetraquark tq;
     //MakeMassHist(&l, myTree, 200, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
     //MakeLMassHist(myTree);
     //MakeKLMassHist(myTree);
-    MakeKLifeHist(myTree);
+    //MakeKLifeHist(myTree);
+    MakeInvMassHist(&tq, myTree, 60);
     
     // Clean up
     file->Close();
