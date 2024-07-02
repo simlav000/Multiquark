@@ -8,6 +8,10 @@ inline Double_t KMassFit(const Double_t *x, const Double_t *par){
     return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3] + par[4]*x[0] + par[5]*x[0]*x[0];  // Gaussian + 2nd order polynomial
 }
 
+inline Double_t GaussPlus3rdOrderPoly(const Double_t *x, const Double_t *par) {
+    return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3] + par[4]*x[0] + par[5]*x[0]*x[0] + par[6]*x[0]*x[0]*x[0];  // Gaussian + 2nd order polynomial
+}
+
 
 inline Double_t LMassFitBreitWigner(const Double_t *x, const Double_t *par){ // Lambda Fit: BreitWigner + Exponential + const
     return par[0]*TMath::BreitWigner(x[0],par[1],par[2]) + par[3]*TMath::Exp(par[4]*x[0]) + par[5];
