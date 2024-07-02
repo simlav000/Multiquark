@@ -106,3 +106,51 @@ public:
         this->invariant_mass_label = "m_{K^{0}_{s}K^{0}_{s}} [MeV]";
     }
 };
+
+class Pentaquark : public Particle {
+public:
+    Pentaquark() : Particle("Pentaquark") {
+        this->name_formatted = "K^{0}_{s}#Lambda^{0}";
+
+        this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
+
+        this->mass = "invMass_KL";
+        this->life = "recLife_KL";
+
+        this->mass_min = 0;
+        this->mass_max = 10000;
+
+        this->life_min = 0;
+        this->life_max = std::numeric_limits<double>::quiet_NaN();
+
+        this->mass_fit_model = GaussPlus3rdOrderPoly;
+        this->life_fit_model = nullptr;
+
+        this->invariant_mass_label = "m_{K^{0}_{s}#Lambda^{0}} [MeV]";
+
+    }
+};
+
+class Hexaquark: public Particle {
+public:
+    Hexaquark() : Particle("Pentaquark") {
+        this->name_formatted = "Lambda^{0}#Lambda^{0}";
+
+        this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
+
+        this->mass = "invMass_LL";
+        this->life = "recLife_LL";
+
+        this->mass_min = 0;
+        this->mass_max = 10000;
+
+        this->life_min = 0;
+        this->life_max = std::numeric_limits<double>::quiet_NaN();
+
+        this->mass_fit_model = GaussPlus3rdOrderPoly; // Subject to change
+        this->life_fit_model = nullptr;
+
+        this->invariant_mass_label = "m_{#Lambda^{0}#Lambda^{0}} [MeV]";
+
+    }
+};
