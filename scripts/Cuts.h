@@ -3,9 +3,7 @@
 #include <string>
 
 /*                      *\
-
   Cuts common to all V0s
-
 \*                      */
 
 inline float V0chi2_high = 15;
@@ -13,9 +11,7 @@ inline TCut cut_on_V0chi2 = Form("chi2ndf < %f", V0chi2_high);
 inline TCut no_cut = "";
 
 /*                *\
-
    Cuts for Kaons 
-
 \*                */
 
 // mm
@@ -50,9 +46,7 @@ inline TCut K_candidate_cuts = cut_on_V0chi2 && cut_on_KDeltaRxy && cut_on_KpT &
 inline TCut K_signal_cuts    = K_candidate_cuts && cut_on_Kmass_signal; // for getting kaons in mass signal region
 
 /*                *\
-
   Cuts for Lambdas
-
 \*                */
 
 // All cuts except mass signal cuts are common to both L and LB
@@ -81,15 +75,17 @@ inline TCut cut_on_Lmass_signal = Form("LMass > %f && LMass < %f", Lmass_signal_
 inline TCut cut_on_LBmass_signal = Form("LBarMass > %f && LBarMass < %f", Lmass_signal_low, Lmass_signal_high);
 
 
+inline TCut LCut2 = cut_on_LcosTheta_3D && cut_on_LpT;
+inline TCut LCut3 = LCut2 && cut_on_LDeltaRxy;
 inline TCut L_LB_candidate_cuts = cut_on_V0chi2 && cut_on_LDeltaRxy && cut_on_LpT && cut_on_LcosTheta_3D && cut_on_L_Kmass; // for plotting L or LB mass distribution
 inline TCut L_signal_cuts    = L_LB_candidate_cuts && cut_on_Lmass_signal; // for getting lambdas in mass signal region
 inline TCut LB_signal_cuts   = L_LB_candidate_cuts && cut_on_LBmass_signal; // for getting lambdabars in mass signal region
 
 /*                 *\
-
   Setting Cut Names
-
 \*                 */
+// Makes it so you can change which cut you perform and the legend gets
+// updated accordingly.
 
 // Utility to convert inline float to string with specific precision
 inline std::string floatToString(float v, int p) {
@@ -99,15 +95,18 @@ inline std::string floatToString(float v, int p) {
 }
 
 inline void SetCutNames() {
-    // Used for automatically printing cut descriptions in histogram legend. 
     no_cut.SetName("No cuts");
 
     cut_on_KcosTheta_3D.SetName(("Cos(#theta) > " + floatToString(KcosTheta_3D_low, 3)).c_str());
+    cut_on_LcosTheta_3D.SetName(("Cos(#theta) > " + floatToString(LcosTheta_3D_low, 3)).c_str());
 
     K_candidate_cuts.SetName("All cuts");
+    L_LB_candidate_cuts.SetName("All cuts");
 
     KCut2.SetName(("p_T > " + floatToString(KpT_low, 2) + " MeV").c_str());
+    LCut2.SetName(("p_T > " + floatToString(LpT_low, 2) + " MeV").c_str());
 
     KCut3.SetName((floatToString(KDeltaRxy_low, 2) + " mm < R > " + floatToString(KDeltaRxy_high, 2) + " mm").c_str());
+    LCut3.SetName((floatToString(LDeltaRxy_low, 2) + " mm < R > " + floatToString(LDeltaRxy_high, 2) + " mm").c_str());
 
 }
