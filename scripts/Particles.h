@@ -2,6 +2,7 @@
 
 #include <Rtypes.h>
 
+#include <limits>
 #include <string>
 
 class Particle {
@@ -81,4 +82,27 @@ public:
         this->invariant_mass_label = "m_{p^{+}#pi^{-}} [MeV]";
     }
     ~Lambda() {}
+};
+
+class Tetraquark : public Particle {
+public:
+    Tetraquark() : Particle("Tetraquark") {
+        this->name_formatted = "K^{0}_{s}K^{0}_{s}";
+
+        this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
+
+        this->mass = "invMass_KK";
+        this->life = "recLife_KK";
+
+        this->mass_min = 0;
+        this->mass_max = 10000;
+
+        this->life_min = 0;
+        this->life_max = std::numeric_limits<double>::quiet_NaN();
+
+        this->mass_fit_model = GaussPlus3rdOrderPoly;
+        this->life_fit_model = nullptr;
+
+        this->invariant_mass_label = "m_{K^{0}_{s}K^{0}_{s}} [MeV]";
+    }
 };
