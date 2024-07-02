@@ -1,22 +1,38 @@
+// Custom includes
 #include "Cuts.h"
-#include "Fits.h"
-#include "TMath.h"
+#include "Particles.h"
+#include "RtypesCore.h"
 
+// ROOT includes
 #include <TBranch.h>
 #include <TCanvas.h>
-#include <TGraph.h>
+#include <TF1.h>
 #include <TFile.h>
-#include <TTree.h>
+#include <TGraph.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TF1.h>
-#include <TLegend.h>
-#include <TStyle.h>
 #include <TLatex.h>
+#include <TLegend.h>
+#include <TMath.h>
+#include <TStyle.h>
+#include <TTree.h>
 
-#include <iostream>
+// C++ includes
+#include <cmath>
 #include <cstdlib>
+#include <iostream>
 #include <string>
+
+std::string FillHist(std::string var_name, std::string hist_name) {
+    std::string formatted = var_name + ">>" + hist_name;
+    return formatted;
+}
+
+void printSignalArea(Double_t A, Double_t sigma) {
+    Double_t sqrt_two_pi = sqrt(TMath::TwoPi());
+    Double_t AreaEstimate = sqrt_two_pi * A * sigma;
+    std::cout << "Area: " << AreaEstimate << std::endl;
+}
 
 void MakeKLMassHist(TTree* myTree) {
 
@@ -43,23 +59,24 @@ void MakeKLMassHist(TTree* myTree) {
     delete canvas;
 }
 
-void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
+
+void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2, TCut Cut3) {
 
     // MeV
-    float mass_min = 300;
-    float mass_max = 650;
-
-    int num_bins = 200;
+    float mass_min = p->mass_min;
+    float mass_max = p->mass_max;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
-    TH1F* hist1 = new TH1F("hist_KMass", "K^{0}_{s} Invariant Mass", num_bins, mass_min, mass_max);
-    TH1F* hist2 = new TH1F("hist_KMass_CosTheta_cut", "K_{s} mass (CosTheta cut)", num_bins, mass_min, mass_max);
-    TH1F* hist3 = new TH1F("hist_KMass_AllCuts", "K_{s} mass (All cuts)", num_bins, mass_min, mass_max);
+    std::string hist_name = p->name_formatted + " Invariant Mass";
+
+    TH1F* hist1 = new TH1F("hist_InvMass_Cut1", hist_name.c_str() , num_bins, mass_min, mass_max);
+    TH1F* hist2 = new TH1F("hist_InvMass_Cut2", "", num_bins, mass_min, mass_max);
+    TH1F* hist3 = new TH1F("hist_InvMass_Cut3", "", num_bins, mass_min, mass_max);
 
     hist1->SetFillColor(kViolet + 6);
     hist1->SetLineColor(kBlack);
-    hist1->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
+    hist1->GetXaxis()->SetTitle((p->invariant_mass_label).c_str());
     hist1->GetYaxis()->SetTitle("Counts per bin");
     hist1->SetMinimum(0);   // Needed to see signal after cuts
     hist1->SetStats(false); // Get rid of stats box
@@ -70,34 +87,36 @@ void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
     hist3->SetFillColor(kSpring - 2);
     hist3->SetLineColor(kBlack);
 
-    myTree->Draw("KMass>>hist_KMass", Cut1, "hist"); 
-    myTree->Draw("KMass>>hist_KMass_CosTheta_cut", Cut2, "hist same");
-    myTree->Draw("KMass>>hist_KMass_AllCuts", Cut3, "hist same");
+    myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut1").c_str(), Cut1, "hist"); 
+    myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut2").c_str(), Cut2, "hist same"); 
+    myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut3").c_str(), Cut3, "hist same"); 
 
-    TF1 *Cut1Fit = new TF1("Cut1Fit", KMassFit, mass_min, mass_max, 6);
-    TF1 *Cut2Fit = new TF1("Cut2Fit", KMassFit, mass_min, mass_max, 6);
-    TF1 *Cut3Fit = new TF1("Cut3Fit", KMassFit, mass_min, mass_max, 6);
+    // Everything is more or less general except for the fitting section 
+    // You'll have to edit this part depending on your fits and particles
+    TF1 *Cut1Fit = new TF1("Cut1Fit", KMassFit, 1090, 1150, 6);
+    TF1 *Cut2Fit = new TF1("Cut2Fit", KMassFit, 1090, 1150, 6);
+    TF1 *Cut3Fit = new TF1("Cut3Fit", KMassFit, 1090, 1150, 6);
 
-    // Set Parameter Names and values
-    // A*Gauss(mu, sigma) + c + bx + ax^2
-    // A = 0, mu = 1, sigma = 2, ...
     Cut1Fit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
     Cut1Fit->SetParLimits(0, 0, 600000); // A > 0
-    Cut1Fit->SetParameter(1, Kmass_PDG);
-    Cut1Fit->SetParLimits(2, 0, 100);    // sigma > 0
+    Cut1Fit->SetParameter(1, p->mass_pdg);
+    Cut1Fit->SetParLimits(2, 0, 10000);    // sigma > 0
     Cut1Fit->SetLineColor(kMagenta + 4);
     Cut1Fit->SetLineWidth(2);
 
     Cut2Fit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
+    Cut2Fit->SetParameter(0, 2400);
     Cut2Fit->SetParLimits(0, 0, 600000);
-    Cut2Fit->SetParameter(1, Kmass_PDG);
-    Cut2Fit->SetParLimits(2, 0, 100);
+    Cut2Fit->SetParameter(1, p->mass_pdg);
+    Cut2Fit->SetParLimits(1, 0, 2000);
+    Cut2Fit->SetParameter(2, 3);
+    Cut2Fit->SetParLimits(2, 1, 10000);
     Cut2Fit->SetLineColor(kOrange);
     Cut2Fit->SetLineWidth(2);
 
     Cut3Fit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
     Cut3Fit->SetParLimits(0, 0, 600000);
-    Cut3Fit->SetParameter(1, Kmass_PDG);
+    Cut3Fit->SetParameter(1, p->mass_pdg);
     Cut3Fit->SetParLimits(2, 0, 100);
     Cut3Fit->SetLineColor(kGreen + 4);
     Cut3Fit->SetLineWidth(2);
@@ -110,6 +129,19 @@ void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
     Cut3Fit->SetNpx(1000);
     Cut2Fit->SetNpx(1000);
 
+    Double_t A_1     = Cut1Fit->GetParameter(0);
+    Double_t sigma_1 = Cut1Fit->GetParameter(2);
+
+    Double_t A_2     = Cut2Fit->GetParameter(0);
+    Double_t sigma_2 = Cut2Fit->GetParameter(2);
+
+    Double_t A_3     = Cut3Fit->GetParameter(0);
+    Double_t sigma_3 = Cut3Fit->GetParameter(2);
+
+    printSignalArea(A_1, sigma_1);
+    printSignalArea(A_2, sigma_2);
+    printSignalArea(A_3, sigma_3);
+
     Cut1Fit->Draw("SAME");
     Cut3Fit->Draw("SAME");
     Cut2Fit->Draw("SAME");
@@ -118,11 +150,11 @@ void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
     // Absolute legend
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
     legend->AddEntry(hist1, Cut1.GetName(), "f");
-    legend->AddEntry(Cut1Fit, "Cosine cut fit", "l"); 
+    legend->AddEntry(Cut1Fit, "Full distribution fit", "l"); 
     legend->AddEntry(hist2, Cut2.GetName(), "f");
-    legend->AddEntry(Cut2Fit, "Cosine and p_T cut fit", "l"); 
+    legend->AddEntry(Cut2Fit, "Cosine cut fit", "l"); 
     legend->AddEntry(hist3, Cut3.GetName(), "f");
-    legend->AddEntry(Cut3Fit, "Cosine, p_T and R cut fit", "l"); 
+    legend->AddEntry(Cut3Fit, "All cuts fit", "l"); 
     legend->Draw();
 
     canvas->SaveAs("KMass.png");
@@ -133,87 +165,6 @@ void MakeKMassHist(TTree* myTree, TCut Cut1, TCut Cut2, TCut Cut3) {
     delete Cut1Fit;
     delete Cut2Fit;
     delete Cut3Fit;
-    delete legend;
-    delete canvas;
-}
-
-void MakeLMassHist(TTree* myTree) {
-
-    // MeV
-    float mass_min = 1080;
-    float mass_max = 1300;
-
-    int num_bins = 200;
-
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1080, 600);
-
-    TH1F* hist1 = new TH1F("hist_LMass", "#Lambda Invariant Mass", num_bins, mass_min, mass_max);
-    TH1F* hist2 = new TH1F("hist_LMass_CosTheta_cut", "#Lambda mass (CosTheta cut)", num_bins, mass_min, mass_max);
-    TH1F* hist3 = new TH1F("hist_LMass_AllCuts", "#Lambda mass (All cuts)", num_bins, mass_min, mass_max);
-
-    hist1->SetFillColor(kViolet + 6);
-    hist1->SetLineColor(kBlack);
-    hist1->GetXaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]"); 
-    hist1->GetYaxis()->SetTitle("Counts per bin");
-    hist1->SetMinimum(0);   // Needed to see signal after cuts
-    hist1->SetStats(false); // Get rid of stats box
-
-    hist2->SetFillColor(kOrange + 10);
-    hist2->SetLineColor(kBlack);
-
-    hist3->SetFillColor(kSpring - 2);
-    hist3->SetLineColor(kBlack);
-
-
-    myTree->Draw("LMass>>hist_LMass", "", "hist"); 
-    myTree->Draw("LMass>>hist_LMass_CosTheta_cut", cut_on_LcosTheta_3D, "hist same");
-    myTree->Draw("LMass>>hist_LMass_AllCuts", L_LB_candidate_cuts, "hist same");
-
-    TF1 *Cut1Fit    = new TF1("Cut1Fit", LMassFitBreitWigner, mass_min, mass_max, 6);
-    TF1 *Cut2Fit = new TF1("Cut2Fit", LMassFitBreitWigner, mass_min, mass_max, 6);
-    TF1 *Cut3Fit  = new TF1("Cut3Fit", LMassFitBreitWigner, mass_min, mass_max, 6);
-
-
-    // Set Parameter Names and values
-    Cut1Fit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
-    Cut1Fit->SetParameter(4, Lmass_PDG);
-    Cut1Fit->SetParLimits(3, 0, 60000);
-    Cut1Fit->SetLineColor(kViolet);
-    Cut1Fit->SetLineWidth(2);
-
-    Cut2Fit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
-    Cut2Fit->SetParLimits(3, 0, 600000);
-    Cut2Fit->SetParameter(4, Lmass_PDG);
-    Cut2Fit->SetLineColor(kOrange + 1);
-    Cut2Fit->SetLineWidth(2);
-
-    Cut3Fit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
-    Cut3Fit->SetParLimits(3, 0, 600000);
-    Cut3Fit->SetParameter(4, Kmass_PDG);
-    Cut3Fit->SetLineColor(kGreen - 1);
-    Cut3Fit->SetLineWidth(2);
-
-    hist1->Fit("Cut1Fit", "R");
-    hist2->Fit("Cut2Fit", "R");
-    hist3->Fit("Cut3Fit", "R");
-
-    Cut1Fit->Draw("SAME");
-    Cut2Fit->Draw("SAME");
-    Cut3Fit->Draw("SAME");
-    
-    // Absolute legend
-    TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
-    legend->AddEntry(hist1, "Full distribution", "f");
-    std::string label = "Cos(#theta) > " + std::to_string(LcosTheta_3D_low);
-    const char* entry = label.c_str();
-    legend->AddEntry(hist2, entry, "f"); // f = fill
-    legend->AddEntry(hist3, "All cuts", "f");
-    legend->Draw();
-
-    canvas->SaveAs("LMass.png");
-
-    delete hist1;
-    delete hist2;
     delete legend;
     delete canvas;
 }
@@ -343,9 +294,15 @@ void MakeHists() {
         return;
     }
 
+    // See bottom of Cuts.h, associates a name to a cut to be printed in 
+    // the histogram legends.
     SetCutNames();
 
-    MakeKMassHist(myTree, cut_on_KcosTheta_3D, KCut2, KCut3);
+    // See Particles.h, provides default data for kaon and lambda plots
+    Kaon k;
+    Lambda l;
+
+    MakeMassHist(&l, myTree, 100, cut_on_KcosTheta_3D, KCut2, KCut3);
     //MakeLMassHist(myTree);
     //MakeKLMassHist(myTree);
     //MakeKLifeHist(myTree);
