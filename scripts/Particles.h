@@ -91,8 +91,8 @@ public:
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass = "invMass_KK";
-        this->life = "recLife_KK";
+        this->mass = "recMassKK";
+        this->life = "recLifeKK";
 
         this->mass_min = 0;
         this->mass_max = 10000;
@@ -114,8 +114,8 @@ public:
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass = "invMass_KL";
-        this->life = "recLife_KL";
+        this->mass = "recMassKL";
+        this->life = "recLifeKL";
 
         this->mass_min = 0;
         this->mass_max = 10000;
@@ -138,8 +138,8 @@ public:
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass = "invMass_LL";
-        this->life = "recLife_LL";
+        this->mass = "recMassLL";
+        this->life = "recLifeLL";
 
         this->mass_min = 0;
         this->mass_max = 10000;

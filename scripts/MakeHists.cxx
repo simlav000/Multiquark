@@ -322,15 +322,23 @@ void MakeHists() {
         return;
     }
 
-    // Get the TTree
-    TTree *myTree = dynamic_cast<TTree*>(file->Get("myTree")); 
-    if (!myTree) {
-        std::cout << "Error: Could not get TTree" << std::endl;
+    // Get the secondary vertex Tree
+    TTree *V0Tree = dynamic_cast<TTree*>(file->Get("V0Tree")); 
+    if (!V0Tree) {
+        std::cout << "Error: Could not get secondary vertex tree" << std::endl;
         file->Close();
         delete file;
         return;
     }
 
+    // Get the secondary vertex Tree
+    TTree *PVTree = dynamic_cast<TTree*>(file->Get("PVTree")); 
+    if (!PVTree) {
+        std::cout << "Error: Could not get primary vertex tree" << std::endl;
+        file->Close();
+        delete file;
+        return;
+    }
     // See bottom of Cuts.h, associates a name to a cut to be printed in 
     // the histogram legends.
     SetCutNames();
@@ -342,12 +350,15 @@ void MakeHists() {
     Pentaquark pq;
     Hexaquark  hq;
 
-    //MakeMassHist(&l, myTree, 200, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
-    //MakeLMassHist(myTree);
+    int num_bins = 500;
+
+    //MakeMassHist(&k, myTree, num_bins, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
     //MakeKLMassHist(myTree);
-    //MakeKLifeHist(myTree);
-    //MakeInvMassHist(&tq, myTree, 80);
-    TestHist(myTree);
+    //keKLifeHist(myTree);
+    //MakeInvMassHist(&tq, PVTree, 80);
+    MakeInvMassHist(&pq, PVTree, 80);
+    //MakeInvMassHist(&hq, PVTree, 80);
+    //TestHist(myTree);
     
     // Clean up
     file->Close();
