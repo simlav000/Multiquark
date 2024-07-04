@@ -18,8 +18,14 @@
 
 // C++ includes
 #include <cstdlib>
+#include <stdexcept>
 
-void MakeInvMassHist(Particle* p, TTree* myTree, int num_bins) {
+void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
+    Multiquark* mq = dynamic_cast<Multiquark*>(p);
+    if (!mq) {
+        throw std::runtime_error("This function is for multiquarks ONLY!");
+    }
+        
     float mass_min = p->mass_min;
     float mass_max = p->mass_max;
 
@@ -34,7 +40,7 @@ void MakeInvMassHist(Particle* p, TTree* myTree, int num_bins) {
     hist->GetYaxis()->SetTitle("Counts per bin");
     hist->SetStats(false);
 
-    myTree->Draw(FillHist(p->mass, "hist").c_str(), "", "hist");
+    PVTree->Draw(FillHist(p->mass, "hist").c_str(), "", "hist");
 
     TF1 *fit = new TF1("InvMassFit", p->mass_fit_model, mass_min, mass_max, 7);
     
@@ -54,7 +60,7 @@ void MakeInvMassHist(Particle* p, TTree* myTree, int num_bins) {
     delete canvas;
 }
 
-void MakeKLMassHist(TTree* myTree) {
+void MakeKLMassHist(TTree* V0Tree) {
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
     TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
@@ -63,7 +69,7 @@ void MakeKLMassHist(TTree* myTree) {
     hist->SetStats(false);
 
     // Fill the histogram with data from the TTree
-    myTree->Draw("LMass:KMass >> hist_KLMass", cut_on_KcosTheta_3D);
+    V0Tree->Draw("LMass:KMass >> hist_KLMass", cut_on_KcosTheta_3D);
 
     // Set axis titles
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
@@ -80,7 +86,7 @@ void MakeKLMassHist(TTree* myTree) {
 }
 
 
-void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2, TCut Cut3) {
+void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2, TCut Cut3) {
 
     // MeV
     float mass_min = p->mass_min;
@@ -107,9 +113,9 @@ void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2
     hist3->SetFillColor(kSpring - 2);
     hist3->SetLineColor(kBlack);
 
-    myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut1").c_str(), Cut1, "hist"); 
-    myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut2").c_str(), Cut2, "hist same"); 
-    myTree->Draw(FillHist(p->mass, "hist_InvMass_Cut3").c_str(), Cut3, "hist same"); 
+    V0Tree->Draw(FillHist(p->mass, "hist_InvMass_Cut1").c_str(), Cut1, "hist"); 
+    V0Tree->Draw(FillHist(p->mass, "hist_InvMass_Cut2").c_str(), Cut2, "hist same"); 
+    V0Tree->Draw(FillHist(p->mass, "hist_InvMass_Cut3").c_str(), Cut3, "hist same"); 
 
     //-------------------------------------------------------------------------
     // Everything is more or less general except for the fitting section 
@@ -192,7 +198,7 @@ void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2
     delete canvas;
 }
 
-void MakeKLifeHist(TTree* myTree) {
+void MakeKLifeHist(TTree* V0Tree) {
 
     float t_min = 0.025e-9;
     float t_max = 0.22e-9;
@@ -206,7 +212,7 @@ void MakeKLifeHist(TTree* myTree) {
     hist->SetMinimum(0);
     hist->SetStats(false);
 
-    myTree->Draw("KLife>>hist_KLife", "", "hist"); 
+    V0Tree->Draw("KLife>>hist_KLife", "", "hist"); 
 
     // Format: TF1("name", fit_func, lowlim, highlim, nparams)
     TF1 *KLifeFit = new TF1("KLifeFit", lifetime_fit_2exp, t_min, t_max, 5);
@@ -299,14 +305,6 @@ void MakeKLifeHist(TTree* myTree) {
 
 }
 
-void TestHist(TTree* myTree) {
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
-
-    TH1F* hist = new TH1F("hist_KLife", "K^{0}_{s} Lifetime", 100, 0, 100);
-
-    myTree->Draw("RErr", "", "hist");
-}
-
 void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
@@ -344,21 +342,20 @@ void MakeHists() {
     SetCutNames();
 
     // See Particles.h, provides default data for kaon and lambda plots
-    Kaon k;
-    Lambda l;
-    Tetraquark tq;
-    Pentaquark pq;
-    Hexaquark  hq;
+    Kaon& k        = Kaon::getInstance();
+    Lambda& l      = Lambda::getInstance();
+    Tetraquark& tq = Tetraquark::getInstance();
+    Pentaquark& pq = Pentaquark::getInstance();
+    Hexaquark& hq  = Hexaquark::getInstance();
 
     int num_bins = 500;
 
-    //MakeMassHist(&k, myTree, num_bins, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
-    //MakeKLMassHist(myTree);
-    //keKLifeHist(myTree);
+    //MakeMassHist(&k, V0Tree, num_bins, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
+    //MakeKLMassHist(V0Tree);
+    //keKLifeHist(V0Tree);
     //MakeInvMassHist(&tq, PVTree, 80);
     MakeInvMassHist(&pq, PVTree, 80);
     //MakeInvMassHist(&hq, PVTree, 80);
-    //TestHist(myTree);
     
     // Clean up
     file->Close();
