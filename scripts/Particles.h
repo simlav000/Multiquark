@@ -1,5 +1,6 @@
 #include "Fits.h"
 
+#include <TCut.h>
 #include <Rtypes.h>
 
 #include <limits>
@@ -26,14 +27,25 @@ public:
 
     std::string invariant_mass_label;
 
-    // Constructor - Destructor
+protected:
     Particle(std::string n) : name(n) {}
-    ~Particle() {}
 
+public:
+    virtual ~Particle() {}
+
+    // Delete copy constructor and assignment operator
+    Particle(const Particle&) = delete;
+    Particle& operator=(const Particle&) = delete;
+};
+
+class Multiquark : public Particle {
+protected:
+    Multiquark(std::string name) : Particle(name) {}
+    virtual ~Multiquark() {}
 };
 
 class Kaon : public Particle {
-public:
+private:
     Kaon() : Particle("Kaon") {
         this->name_formatted = "K^{0}_{s}";
 
@@ -55,11 +67,16 @@ public:
 
         this->invariant_mass_label = "m_{#pi^{+}#pi^{-}} [MeV]";
     }
-    ~Kaon() {}
+
+public:
+    static Kaon& getInstance() {
+        static Kaon instance;
+        return instance;
+    }
 };
 
 class Lambda : public Particle {
-public:
+private:
     Lambda() : Particle("Lambda") {
         this->name_formatted = "#Lambda^{0}";
 
@@ -81,12 +98,19 @@ public:
 
         this->invariant_mass_label = "m_{p^{+}#pi^{-}} [MeV]";
     }
-    ~Lambda() {}
+
+public: 
+    static Lambda& getInstance() {
+        static Lambda instance;
+        return instance;
+    }
 };
 
-class Tetraquark : public Particle {
-public:
-    Tetraquark() : Particle("Tetraquark") {
+class Tetraquark : public Multiquark {
+private:
+    TCut default_cut;
+
+    Tetraquark() : Multiquark("Tetraquark") {
         this->name_formatted = "K^{0}_{s}K^{0}_{s}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
@@ -105,11 +129,17 @@ public:
 
         this->invariant_mass_label = "m_{K^{0}_{s}K^{0}_{s}} [MeV]";
     }
+
+public:
+    static Tetraquark& getInstance() {
+        static Tetraquark instance;
+        return instance;
+    }
 };
 
-class Pentaquark : public Particle {
-public:
-    Pentaquark() : Particle("Pentaquark") {
+class Pentaquark : public Multiquark{
+private:
+    Pentaquark() : Multiquark("Pentaquark") {
         this->name_formatted = "K^{0}_{s}#Lambda^{0}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
@@ -129,11 +159,17 @@ public:
         this->invariant_mass_label = "m_{K^{0}_{s}#Lambda^{0}} [MeV]";
 
     }
+
+public: 
+    static Pentaquark& getInstance() {
+        static Pentaquark instance;
+        return instance;
+    }
 };
 
-class Hexaquark: public Particle {
-public:
-    Hexaquark() : Particle("Pentaquark") {
+class Hexaquark: public Multiquark{
+private:
+    Hexaquark() : Multiquark("Pentaquark") {
         this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
@@ -151,6 +187,11 @@ public:
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{#Lambda^{0}#Lambda^{0}} [MeV]";
+    }
 
+public:
+    static Hexaquark& getInstance() {
+        static Hexaquark instance;
+        return instance;
     }
 };
