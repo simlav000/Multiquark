@@ -8,6 +8,7 @@
 inline float V0chi2_high = 15;
 inline TCut cut_on_V0chi2 = Form("chi2ndf < %f", V0chi2_high);
 inline TCut no_cut = "";
+inline TCut NaNCut = "!TMath::IsNaN(RErr)";
 
 /*                *\
    Cuts for Kaons 
