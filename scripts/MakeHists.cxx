@@ -28,7 +28,7 @@ void MakeInvMassHist(Particle* p, TTree* myTree, int num_bins) {
     std::string hist_name = p->name_formatted + " Invariant Mass Distribution";
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
 
-    hist->SetFillColor(kTeal);
+    hist->SetFillColor(kTeal+ 4);
     hist->SetLineColor(kBlack);
     hist->GetXaxis()->SetTitle((p->invariant_mass_label).c_str());
     hist->GetYaxis()->SetTitle("Counts per bin");
@@ -36,9 +36,21 @@ void MakeInvMassHist(Particle* p, TTree* myTree, int num_bins) {
 
     myTree->Draw(FillHist(p->mass, "hist").c_str(), "", "hist");
 
+    TF1 *fit = new TF1("InvMassFit", p->mass_fit_model, mass_min, mass_max, 7);
+    
+    fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
+    fit->SetLineColor(kTeal + 3);
+    fit->SetLineWidth(2);
+    fit->SetNpx(1000);
+
+    hist->Fit("InvMassFit", "R");
+
+    fit->Draw("SAME");
+
     canvas->SaveAs("KKMass.png");
 
     delete hist;
+    delete fit;
     delete canvas;
 }
 
@@ -113,6 +125,7 @@ void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2
     Cut1Fit->SetParLimits(2, 0, 10000);    // sigma > 0
     Cut1Fit->SetLineColor(kMagenta + 4);
     Cut1Fit->SetLineWidth(2);
+    Cut1Fit->SetNpx(1000);
 
     Cut2Fit->SetParNames("A_2", "mu_2", "sigma_2", "c_2", "b_2", "a_2"); 
     Cut2Fit->SetParameter(0, 2400);
@@ -123,6 +136,7 @@ void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2
     Cut2Fit->SetParLimits(2, 1, 10000);
     Cut2Fit->SetLineColor(kOrange);
     Cut2Fit->SetLineWidth(2);
+    Cut2Fit->SetNpx(1000);
 
     Cut3Fit->SetParNames("A_3", "mu_3", "sigma_3", "c_3", "b_3", "a_3"); 
     Cut3Fit->SetParLimits(0, 0, 600000);
@@ -130,15 +144,13 @@ void MakeMassHist(Particle* p, TTree* myTree, int num_bins, TCut Cut1, TCut Cut2
     Cut3Fit->SetParLimits(2, 0, 100);
     Cut3Fit->SetLineColor(kGreen + 4);
     Cut3Fit->SetLineWidth(2);
+    Cut3Fit->SetNpx(1000);
     //-------------------------------------------------------------------------
 
     hist1->Fit("Cut1Fit", "R");
     hist2->Fit("Cut2Fit", "R");
     hist3->Fit("Cut3Fit", "R");
 
-    Cut1Fit->SetNpx(1000);
-    Cut3Fit->SetNpx(1000);
-    Cut2Fit->SetNpx(1000);
 
     Double_t A_1     = Cut1Fit->GetParameter(0);
     Double_t sigma_1 = Cut1Fit->GetParameter(2);
@@ -287,6 +299,14 @@ void MakeKLifeHist(TTree* myTree) {
 
 }
 
+void TestHist(TTree* myTree) {
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+
+    TH1F* hist = new TH1F("hist_KLife", "K^{0}_{s} Lifetime", 100, 0, 100);
+
+    myTree->Draw("RErr", "", "hist");
+}
+
 void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
@@ -319,11 +339,15 @@ void MakeHists() {
     Kaon k;
     Lambda l;
     Tetraquark tq;
+    Pentaquark pq;
+    Hexaquark  hq;
+
     //MakeMassHist(&l, myTree, 200, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
     //MakeLMassHist(myTree);
     //MakeKLMassHist(myTree);
     //MakeKLifeHist(myTree);
-    MakeInvMassHist(&tq, myTree, 60);
+    //MakeInvMassHist(&tq, myTree, 80);
+    TestHist(myTree);
     
     // Clean up
     file->Close();
