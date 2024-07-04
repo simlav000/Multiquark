@@ -81,6 +81,15 @@ inline TCut L_LB_candidate_cuts = cut_on_V0chi2 && cut_on_LDeltaRxy && cut_on_Lp
 inline TCut L_signal_cuts    = L_LB_candidate_cuts && cut_on_Lmass_signal; // for getting lambdas in mass signal region
 inline TCut LB_signal_cuts   = L_LB_candidate_cuts && cut_on_LBmass_signal; // for getting lambdabars in mass signal region
 
+
+/*                      *\
+   Cuts for Multiquarks 
+\*                      */
+
+inline TCut TetraquarkCut = "!TMath::IsNaN(recMassKL) && !TMath::IsNaN(recMassLL)";
+inline TCut PentaquarkCut = "!TMath::IsNaN(recMassKK) && !TMath::IsNaN(recMassLL)";
+inline TCut HexaquarkCut  = "!TMath::IsNaN(recMassKK) && !TMath::IsNaN(recMassKL)";
+
 /*                 *\
   Setting Cut Names
 \*                 */
