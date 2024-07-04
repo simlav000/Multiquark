@@ -134,7 +134,7 @@ public:
 class Hexaquark: public Particle {
 public:
     Hexaquark() : Particle("Pentaquark") {
-        this->name_formatted = "Lambda^{0}#Lambda^{0}";
+        this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
 
