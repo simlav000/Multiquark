@@ -15,9 +15,6 @@
 #include <TStyle.h>
 #include <TTree.h>
 
-// C++ includes
-#include <cstdlib>
-#include <stdexcept>
 
 void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
@@ -33,24 +30,23 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
     std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
 
-    hist->SetFillColor(kTeal+ 4);
+    hist->SetFillColor(mq->fill_color);
     hist->SetLineColor(kBlack);
     hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
     hist->GetYaxis()->SetTitle("Counts per bin");
 
-    // 319k w/out
     PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
 
     TF1 *fit = new TF1("InvMassFit", mq->mass_fit_model, mass_min, mass_max, 7);
     
     fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
-    fit->SetLineColor(kTeal + 3);
+    fit->SetLineColor(mq->line_color);
     fit->SetLineWidth(2);
     fit->SetNpx(1000);
 
     hist->Fit("InvMassFit", "R");
 
-    fit->Draw("SAME");
+    // fit->Draw("SAME");
 
     canvas->SaveAs("KKMass.png");
 
@@ -308,7 +304,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "datasetBIG.root";
+    std::string data = "datasetHUGE.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -353,7 +349,7 @@ void MakeHists() {
     //MakeKLMassHist(V0Tree);
     //keKLifeHist(V0Tree);
     //MakeInvMassHist(&tq, PVTree, 80);
-    MakeInvMassHist(&tq, PVTree, 100);
+    MakeInvMassHist(&hq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 80);
     
     // Clean up
