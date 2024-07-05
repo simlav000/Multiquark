@@ -1,6 +1,6 @@
 #include "Fits.h"
+#include "Cuts.h"
 
-#include <TCut.h>
 #include <Rtypes.h>
 
 #include <limits>
@@ -39,6 +39,8 @@ public:
 };
 
 class Multiquark : public Particle {
+public:
+    TCut default_cut;
 protected:
     Multiquark(std::string name) : Particle(name) {}
     virtual ~Multiquark() {}
@@ -62,8 +64,8 @@ private:
         this->life_min = 0.025e-9;
         this->life_max = 0.22e-9;
 
-        this->mass_fit_model = KMassFit;
-        this->life_fit_model = lifetime_fit_2exp; 
+        this->mass_fit_model = Fits::KMassFit;
+        this->life_fit_model = Fits::lifetime_fit_2exp; 
 
         this->invariant_mass_label = "m_{#pi^{+}#pi^{-}} [MeV]";
     }
@@ -93,8 +95,8 @@ private:
         this->life_min = 0.025e-9;
         this->life_max = 0.22e-9;
 
-        this->mass_fit_model = LMassFitBreitWigner;
-        this->life_fit_model = lifetime_fit_2exp; 
+        this->mass_fit_model = Fits::LMassFitBreitWigner;
+        this->life_fit_model = Fits::lifetime_fit_2exp; 
 
         this->invariant_mass_label = "m_{p^{+}#pi^{-}} [MeV]";
     }
@@ -108,9 +110,9 @@ public:
 
 class Tetraquark : public Multiquark {
 private:
-    TCut default_cut;
-
     Tetraquark() : Multiquark("Tetraquark") {
+        this->default_cut = Cuts::TetraquarkCut;
+
         this->name_formatted = "K^{0}_{s}K^{0}_{s}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
@@ -124,7 +126,7 @@ private:
         this->life_min = 0;
         this->life_max = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass_fit_model = GaussPlus3rdOrderPoly;
+        this->mass_fit_model = Fits::GaussPlus3rdOrderPoly;
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{K^{0}_{s}K^{0}_{s}} [MeV]";
@@ -140,6 +142,8 @@ public:
 class Pentaquark : public Multiquark{
 private:
     Pentaquark() : Multiquark("Pentaquark") {
+        this->default_cut = Cuts::PentaquarkCut;
+
         this->name_formatted = "K^{0}_{s}#Lambda^{0}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
@@ -153,7 +157,7 @@ private:
         this->life_min = 0;
         this->life_max = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass_fit_model = GaussPlus3rdOrderPoly;
+        this->mass_fit_model = Fits::GaussPlus3rdOrderPoly;
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{K^{0}_{s}#Lambda^{0}} [MeV]";
@@ -170,6 +174,8 @@ public:
 class Hexaquark: public Multiquark{
 private:
     Hexaquark() : Multiquark("Pentaquark") {
+        this->default_cut = Cuts::PentaquarkCut;
+
         this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
@@ -183,7 +189,7 @@ private:
         this->life_min = 0;
         this->life_max = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass_fit_model = GaussPlus3rdOrderPoly; // Subject to change
+        this->mass_fit_model = Fits::GaussPlus3rdOrderPoly; // Subject to change
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{#Lambda^{0}#Lambda^{0}} [MeV]";
