@@ -41,6 +41,9 @@ public:
 class Multiquark : public Particle {
 public:
     TCut default_cut;
+    EColor fill_color;
+    EColor line_color;
+
 protected:
     Multiquark(std::string name) : Particle(name) {}
     virtual ~Multiquark() {}
@@ -112,6 +115,8 @@ class Tetraquark : public Multiquark {
 private:
     Tetraquark() : Multiquark("Tetraquark") {
         this->default_cut = Cuts::TetraquarkCut;
+        this->fill_color = kTeal;
+        this->line_color = static_cast<EColor>(kTeal + 4);
 
         this->name_formatted = "K^{0}_{s}K^{0}_{s}";
 
@@ -143,6 +148,8 @@ class Pentaquark : public Multiquark{
 private:
     Pentaquark() : Multiquark("Pentaquark") {
         this->default_cut = Cuts::PentaquarkCut;
+        this->fill_color = kCyan;
+        this->line_color = static_cast<EColor>(kCyan + 4);
 
         this->name_formatted = "K^{0}_{s}#Lambda^{0}";
 
@@ -174,7 +181,9 @@ public:
 class Hexaquark: public Multiquark{
 private:
     Hexaquark() : Multiquark("Pentaquark") {
-        this->default_cut = Cuts::PentaquarkCut;
+        this->default_cut = Cuts::HexaquarkCut;
+        this->fill_color = static_cast<EColor>(kGreen - 6);
+        this->line_color = static_cast<EColor>(kGreen - 8);
 
         this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
