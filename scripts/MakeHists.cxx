@@ -1,5 +1,4 @@
 // Custom includes
-#include "Cuts.h"
 #include "Particles.h"
 #include "Utilities.h"
 
@@ -26,23 +25,23 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
     }
         
-    float mass_min = p->mass_min;
-    float mass_max = p->mass_max;
+    float mass_min = mq->mass_min;
+    float mass_max = mq->mass_max;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
-    std::string hist_name = p->name_formatted + " Invariant Mass Distribution";
+    std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
 
     hist->SetFillColor(kTeal+ 4);
     hist->SetLineColor(kBlack);
-    hist->GetXaxis()->SetTitle((p->invariant_mass_label).c_str());
+    hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
     hist->GetYaxis()->SetTitle("Counts per bin");
-    hist->SetStats(false);
 
-    PVTree->Draw(FillHist(p->mass, "hist").c_str(), "", "hist");
+    // 319k w/out
+    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
 
-    TF1 *fit = new TF1("InvMassFit", p->mass_fit_model, mass_min, mass_max, 7);
+    TF1 *fit = new TF1("InvMassFit", mq->mass_fit_model, mass_min, mass_max, 7);
     
     fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
     fit->SetLineColor(kTeal + 3);
@@ -69,7 +68,7 @@ void MakeKLMassHist(TTree* V0Tree) {
     hist->SetStats(false);
 
     // Fill the histogram with data from the TTree
-    V0Tree->Draw("LMass:KMass >> hist_KLMass", cut_on_KcosTheta_3D);
+    V0Tree->Draw("LMass:KMass >> hist_KLMass", Cuts::cut_on_KcosTheta_3D);
 
     // Set axis titles
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
@@ -121,9 +120,9 @@ void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2
     // Everything is more or less general except for the fitting section 
     // You'll have to edit this part depending on your fits and particles
 
-    TF1 *Cut1Fit = new TF1("Cut1Fit", KMassFit, 1090, 1145, 6);
-    TF1 *Cut2Fit = new TF1("Cut2Fit", KMassFit, 1090, 1150, 6);
-    TF1 *Cut3Fit = new TF1("Cut3Fit", KMassFit, 1090, 1150, 6);
+    TF1 *Cut1Fit = new TF1("Cut1Fit", Fits::KMassFit, 1090, 1145, 6);
+    TF1 *Cut2Fit = new TF1("Cut2Fit", Fits::KMassFit, 1090, 1150, 6);
+    TF1 *Cut3Fit = new TF1("Cut3Fit", Fits::KMassFit, 1090, 1150, 6);
 
     Cut1Fit->SetParNames("A_1", "mu_1", "sigma_1", "c_1", "b_1", "a_1"); 
     Cut1Fit->SetParLimits(0, 0, 600000); // A > 0
@@ -215,7 +214,7 @@ void MakeKLifeHist(TTree* V0Tree) {
     V0Tree->Draw("KLife>>hist_KLife", "", "hist"); 
 
     // Format: TF1("name", fit_func, lowlim, highlim, nparams)
-    TF1 *KLifeFit = new TF1("KLifeFit", lifetime_fit_2exp, t_min, t_max, 5);
+    TF1 *KLifeFit = new TF1("KLifeFit", Fits::lifetime_fit_2exp, t_min, t_max, 5);
 
     // Set Parameter Names
     KLifeFit->SetParName(0, "C_0");  // Constant offset
@@ -309,7 +308,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "dataset.root";
+    std::string data = "datasetBIG.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -339,7 +338,7 @@ void MakeHists() {
     }
     // See bottom of Cuts.h, associates a name to a cut to be printed in 
     // the histogram legends.
-    SetCutNames();
+    Cuts::SetCutNames();
 
     // See Particles.h, provides default data for kaon and lambda plots
     Kaon& k        = Kaon::getInstance();
@@ -350,11 +349,11 @@ void MakeHists() {
 
     int num_bins = 500;
 
-    //MakeMassHist(&k, V0Tree, num_bins, no_cut, cut_on_KcosTheta_3D, L_LB_candidate_cuts);
+    //MakeMassHist(&k, V0Tree, num_bins, Cuts::no_cut, Cuts::cut_on_KcosTheta_3D, Cuts::L_LB_candidate_cuts);
     //MakeKLMassHist(V0Tree);
     //keKLifeHist(V0Tree);
     //MakeInvMassHist(&tq, PVTree, 80);
-    MakeInvMassHist(&pq, PVTree, 80);
+    MakeInvMassHist(&tq, PVTree, 100);
     //MakeInvMassHist(&hq, PVTree, 80);
     
     // Clean up
