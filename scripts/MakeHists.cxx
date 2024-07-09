@@ -48,7 +48,7 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
 
     // fit->Draw("SAME");
 
-    canvas->SaveAs("KKMass.png");
+    canvas->SaveAs(mq->output_filename.c_str());
 
     delete hist;
     delete fit;
@@ -56,17 +56,28 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
 }
 
 void MakeKLMassHist(TTree* V0Tree) {
+    int num_bins_x = 100;
+    int num_bins_y = 100;
+
+    int x_low = 250;
+    int x_high = 900;
+
+    int y_low = 1000;
+    int y_high = 1600;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
-    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", 50, 250, 1000, 50, 1000, 1600);
+    canvas->SetRightMargin(0.15);
 
-    gStyle->SetPalette(89); //kMint
+    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", num_bins_x, x_low, x_high, num_bins_y, y_low, y_high);
+
+    gStyle->SetPalette(kRainBow); //kMint
     hist->SetStats(false);
 
     // Fill the histogram with data from the TTree
     V0Tree->Draw("LMass:KMass >> hist_KLMass", Cuts::cut_on_KcosTheta_3D);
 
     // Set axis titles
+    hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
 
     // Draw the histogram with a color map
@@ -346,10 +357,13 @@ void MakeHists() {
     int num_bins = 500;
 
     //MakeMassHist(&k, V0Tree, num_bins, Cuts::no_cut, Cuts::cut_on_KcosTheta_3D, Cuts::L_LB_candidate_cuts);
-    //MakeKLMassHist(V0Tree);
-    //keKLifeHist(V0Tree);
+    MakeKLMassHist(V0Tree);
+    //MakeKLifeHist(V0Tree);
     //MakeInvMassHist(&tq, PVTree, 80);
-    MakeInvMassHist(&hq, PVTree, 300);
+    //MakeInvMassHist(&tq, PVTree, 75);
+    //MakeInvMassHist(&pq, PVTree, 40);
+    //MakeInvMassHist(&hq, PVTree, 30);
+
     //MakeInvMassHist(&hq, PVTree, 80);
     
     // Clean up
