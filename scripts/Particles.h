@@ -44,6 +44,8 @@ public:
     EColor fill_color;
     EColor line_color;
 
+    std::string output_filename;
+
 protected:
     Multiquark(std::string name) : Particle(name) {}
     virtual ~Multiquark() {}
@@ -118,6 +120,8 @@ private:
         this->fill_color = kTeal;
         this->line_color = static_cast<EColor>(kTeal + 4);
 
+        this->output_filename = "KKInvMass.png";
+
         this->name_formatted = "K^{0}_{s}K^{0}_{s}";
 
         this->mass_pdg = std::numeric_limits<double>::quiet_NaN();
@@ -150,6 +154,7 @@ private:
         this->default_cut = Cuts::PentaquarkCut;
         this->fill_color = kCyan;
         this->line_color = static_cast<EColor>(kCyan + 4);
+        this->output_filename = "KLInvMass.png";
 
         this->name_formatted = "K^{0}_{s}#Lambda^{0}";
 
@@ -184,6 +189,7 @@ private:
         this->default_cut = Cuts::HexaquarkCut;
         this->fill_color = static_cast<EColor>(kGreen - 6);
         this->line_color = static_cast<EColor>(kGreen - 8);
+        this->output_filename = "LLInvMass.png";
 
         this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
