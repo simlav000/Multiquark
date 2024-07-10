@@ -103,7 +103,11 @@ void MakeKLMassHist(TTree* V0Tree) {
     hist->SetStats(false);
 
     // Fill the histogram with data from the TTree
-    V0Tree->Draw("LMass:KMass >> hist_KLMass", Cuts::cut_on_KcosTheta_3D);
+    V0Tree->Draw("LMass:KMass >> hist_KLMass",
+                 Cuts::cut_on_KcosTheta_3D && Cuts::cut_on_KpT &&
+                 Cuts::cut_on_KDeltaRxy &&
+                 Cuts::cut_on_LpT && Cuts::cut_on_LDeltaRxy
+                 ); 
 
     // Set axis titles
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
@@ -113,7 +117,7 @@ void MakeKLMassHist(TTree* V0Tree) {
     hist->Draw("COLZ");
 
     // Save the canvas as a PNG file
-    canvas->SaveAs("KLMass2.png");
+    canvas->SaveAs("KLMassCutRp_Tcos.png");
 
     // Clean up
     delete hist;
@@ -344,7 +348,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "datasetHUGE.root";
+    std::string data = "20240710_1439dataset.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -386,11 +390,11 @@ void MakeHists() {
     int num_bins = 500;
 
     //MakeMassHist(&k, V0Tree, num_bins, Cuts::no_cut, Cuts::cut_on_KcosTheta_3D, Cuts::L_LB_candidate_cuts);
-    //MakeKLMassHist(V0Tree);
+    MakeKLMassHist(V0Tree);
     //MakeKLifeHist(V0Tree);
-    MakeInvMassHist(&tq, PVTree, 300);
-    MakeInvMassHist(&pq, PVTree, 300);
-    MakeInvMassHist(&hq, PVTree, 200);
+    //MakeInvMassHist(&tq, PVTree, 300);
+    //MakeInvMassHist(&pq, PVTree, 300);
+    //MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 60);
 
     //MakeInvMassHist(&hq, PVTree, 80);
