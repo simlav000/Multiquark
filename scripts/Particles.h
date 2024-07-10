@@ -45,6 +45,11 @@ public:
     EColor line_color;
 
     std::string output_filename;
+    std::string LER_filename;
+
+    // LER: Low-energy resonance
+    float LER_mass_min;
+    float LER_mass_max;
 
 protected:
     Multiquark(std::string name) : Particle(name) {}
@@ -120,7 +125,11 @@ private:
         this->fill_color = kTeal;
         this->line_color = static_cast<EColor>(kTeal + 4);
 
+        this->LER_mass_min = 1200;
+        this->LER_mass_max = 2600;
+
         this->output_filename = "KKInvMass.png";
+        this->LER_filename = "KKInvMassLowEnergy.png";
 
         this->name_formatted = "K^{0}_{s}K^{0}_{s}";
 
