@@ -15,15 +15,15 @@
 #include <TStyle.h>
 #include <TTree.h>
 
-
-void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
+void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
     if (!mq) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
     }
         
-    float mass_min = mq->mass_min;
-    float mass_max = mq->mass_max;
+    // LER: Low-energy Resonance
+    float mass_min = mq->LER_mass_min;
+    float mass_max = mq->LER_mass_max;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
@@ -46,12 +46,41 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
 
     hist->Fit("InvMassFit", "R");
 
-    // fit->Draw("SAME");
+    fit->Draw("SAME");
+
+    canvas->SaveAs(mq->LER_filename.c_str());
+
+    delete hist;
+    delete fit;
+    delete canvas;
+}
+
+void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
+    Multiquark* mq = dynamic_cast<Multiquark*>(p);
+    if (!mq) {
+        throw std::runtime_error("This function is for multiquarks ONLY!");
+    }
+        
+    float mass_min = mq->mass_min;
+    float mass_max = mq->mass_max;
+
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+
+    std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
+    TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
+
+    hist->SetFillColor(mq->fill_color);
+    hist->SetLineColor(kBlack);
+    hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
+    hist->GetYaxis()->SetTitle("Counts per bin");
+
+    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
+
+    hist->Fit("InvMassFit", "R");
 
     canvas->SaveAs(mq->output_filename.c_str());
 
     delete hist;
-    delete fit;
     delete canvas;
 }
 
@@ -357,12 +386,12 @@ void MakeHists() {
     int num_bins = 500;
 
     //MakeMassHist(&k, V0Tree, num_bins, Cuts::no_cut, Cuts::cut_on_KcosTheta_3D, Cuts::L_LB_candidate_cuts);
-    MakeKLMassHist(V0Tree);
+    //MakeKLMassHist(V0Tree);
     //MakeKLifeHist(V0Tree);
-    //MakeInvMassHist(&tq, PVTree, 80);
-    //MakeInvMassHist(&tq, PVTree, 75);
-    //MakeInvMassHist(&pq, PVTree, 40);
-    //MakeInvMassHist(&hq, PVTree, 30);
+    MakeInvMassHist(&tq, PVTree, 300);
+    MakeInvMassHist(&pq, PVTree, 300);
+    MakeInvMassHist(&hq, PVTree, 200);
+    //LowEnergyResonanceFit(&tq, PVTree, 60);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
