@@ -25,7 +25,7 @@ namespace Cuts {
     inline float K_LmassBand1_high = 1105;
     inline float K_LmassBand2_low = 1125;
     
-    inline float KcosTheta_3D_low = 0.9990;
+    inline float KcosTheta_3D_low = 0.9998;
     
     inline TCut cut_on_KDeltaRxy    = Form("DeltaR > %f && DeltaR < %f", KDeltaRxy_low, KDeltaRxy_high);
     inline TCut cut_on_KpT          = Form("p_T > %f", KpT_low);
