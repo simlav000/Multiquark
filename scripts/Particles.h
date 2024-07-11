@@ -126,7 +126,7 @@ private:
         this->line_color = static_cast<EColor>(kTeal + 4);
 
         this->LER_mass_min = 1200;
-        this->LER_mass_max = 2600;
+        this->LER_mass_max = 2700;
 
         this->output_filename = "KKInvMass.png";
         this->LER_filename = "KKInvMassLowEnergy.png";
