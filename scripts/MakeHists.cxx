@@ -348,7 +348,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "20240710_1439dataset.root";
+    std::string data = "DID12.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -394,12 +394,16 @@ void MakeHists() {
     Hexaquark& hq  = Hexaquark::getInstance();
 
     //MakeMassHist(&k, V0Tree, num_bins, Cuts::no_cut, Cuts::cut_on_KcosTheta_3D, Cuts::L_LB_candidate_cuts);
-    MakeKLMassHist(V0Tree);
+    //MakeKLMassHist(V0Tree);
     //MakeKLifeHist(V0Tree);
     MakeInvMassHist(&tq, PVTree, 300);
     MakeInvMassHist(&pq, PVTree, 300);
     MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 60);
+    //MakeInvMassHist(&tq, PVTree, 300);
+    //MakeInvMassHist(&pq, PVTree, 300);
+    //MakeInvMassHist(&hq, PVTree, 200);
+    LowEnergyResonanceFit(&tq, PVTree, 80);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
