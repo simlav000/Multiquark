@@ -20,7 +20,7 @@ namespace Cuts {
     inline float KDeltaRxy_high = 450;
     
     // MeV
-    inline float KpT_low = 300;
+    inline float KpT_low = 400;
     inline float K_LmassBand1_low = 0;
     inline float K_LmassBand1_high = 1105;
     inline float K_LmassBand2_low = 1125;
