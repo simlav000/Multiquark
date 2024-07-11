@@ -37,6 +37,13 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
 
+    // Set bin errors, assuming bin count is Poisson distributed
+    for (int i = 1; i <= hist->GetNbinsX(); i++) {
+        double n = hist->GetBinContent(i);
+        double error = sqrt(n);
+        hist->SetBinError(i, error);
+    }
+
     TF1 *fit = new TF1("InvMassFit", mq->mass_fit_model, mass_min, mass_max, 7);
     
     fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
@@ -44,6 +51,9 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     fit->SetLineWidth(2);
     fit->SetNpx(1000);
 
+    gStyle->SetErrorX(0);
+
+    hist->Draw("SAME E1");
     hist->Fit("InvMassFit", "R");
 
     fit->Draw("SAME");
@@ -69,15 +79,14 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
     std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
 
+
+    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
+
     hist->SetFillColor(mq->fill_color);
     hist->SetLineColor(kBlack);
     hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
     hist->GetYaxis()->SetTitle("Counts per bin");
-
-    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
-
-    hist->Fit("InvMassFit", "R");
-
+    
     canvas->SaveAs(mq->output_filename.c_str());
 
     delete hist;
@@ -348,7 +357,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "DID12.root";
+    std::string data = "DID3.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -396,14 +405,11 @@ void MakeHists() {
     //MakeMassHist(&k, V0Tree, num_bins, Cuts::no_cut, Cuts::cut_on_KcosTheta_3D, Cuts::L_LB_candidate_cuts);
     //MakeKLMassHist(V0Tree);
     //MakeKLifeHist(V0Tree);
+    
     MakeInvMassHist(&tq, PVTree, 300);
     MakeInvMassHist(&pq, PVTree, 300);
     MakeInvMassHist(&hq, PVTree, 200);
-    //LowEnergyResonanceFit(&tq, PVTree, 60);
-    //MakeInvMassHist(&tq, PVTree, 300);
-    //MakeInvMassHist(&pq, PVTree, 300);
-    //MakeInvMassHist(&hq, PVTree, 200);
-    LowEnergyResonanceFit(&tq, PVTree, 80);
+    LowEnergyResonanceFit(&tq, PVTree, 50);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
