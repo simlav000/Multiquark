@@ -359,23 +359,29 @@ void MakeHists() {
         return;
     }
 
-    // Get the secondary vertex Tree
+    bool hasV0 = true;
+    bool hasPV = true;
+
+    // Get the secondary vertex Tree (if present)
     TTree *V0Tree = dynamic_cast<TTree*>(file->Get("V0Tree")); 
     if (!V0Tree) {
-        std::cout << "Error: Could not get secondary vertex tree" << std::endl;
-        file->Close();
-        delete file;
-        return;
+        std::cout << "Warning: Could not get secondary vertex tree" << std::endl;
+        hasV0 = false;
     }
 
-    // Get the secondary vertex Tree
+    // Get the primary vertex Tree 
     TTree *PVTree = dynamic_cast<TTree*>(file->Get("PVTree")); 
     if (!PVTree) {
-        std::cout << "Error: Could not get primary vertex tree" << std::endl;
+        std::cout << "Warning: Could not get primary vertex tree" << std::endl;
+        hasPV = false;
+    }
+
+    if (!hasPV && !hasV0) {
+        std::cerr << "Error: No data found" << std::endl;
         file->Close();
         delete file;
-        return;
     }
+
     // See bottom of Cuts.h, associates a name to a cut to be printed in 
     // the histogram legends.
     Cuts::SetCutNames();
@@ -387,14 +393,12 @@ void MakeHists() {
     Pentaquark& pq = Pentaquark::getInstance();
     Hexaquark& hq  = Hexaquark::getInstance();
 
-    int num_bins = 500;
-
     //MakeMassHist(&k, V0Tree, num_bins, Cuts::no_cut, Cuts::cut_on_KcosTheta_3D, Cuts::L_LB_candidate_cuts);
     MakeKLMassHist(V0Tree);
     //MakeKLifeHist(V0Tree);
-    //MakeInvMassHist(&tq, PVTree, 300);
-    //MakeInvMassHist(&pq, PVTree, 300);
-    //MakeInvMassHist(&hq, PVTree, 200);
+    MakeInvMassHist(&tq, PVTree, 300);
+    MakeInvMassHist(&pq, PVTree, 300);
+    MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 60);
 
     //MakeInvMassHist(&hq, PVTree, 80);
