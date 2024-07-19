@@ -163,7 +163,12 @@ private:
         this->default_cut = Cuts::PentaquarkCut;
         this->fill_color = kCyan;
         this->line_color = static_cast<EColor>(kCyan + 4);
+
+        this->LER_mass_min = 1400;
+        this->LER_mass_max = 3100;
+
         this->output_filename = "KLInvMass.png";
+        this->LER_filename = "KLInvMassLowEnergy.png";
 
         this->name_formatted = "K^{0}_{s}#Lambda^{0}";
 
@@ -198,7 +203,12 @@ private:
         this->default_cut = Cuts::HexaquarkCut;
         this->fill_color = static_cast<EColor>(kGreen - 6);
         this->line_color = static_cast<EColor>(kGreen - 8);
+
+        this->LER_mass_min = 1600;
+        this->LER_mass_max = 3300;
+
         this->output_filename = "LLInvMass.png";
+        this->LER_filename = "LLInvMassLowEnergy.png";
 
         this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
