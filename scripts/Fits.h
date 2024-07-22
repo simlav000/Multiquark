@@ -34,5 +34,8 @@ namespace Fits {
     }
     
     
+    inline Double_t exp_quadratic(const Double_t *x, const Double_t *par) {
+        return TMath::Exp(-(par[0]*pow(x[0] - par[3], 2) + par[1]*(x[0] - par[3]) + par[2]));
+    }
 }
 #endif // FITS_H
