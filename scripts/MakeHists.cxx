@@ -1,4 +1,5 @@
 // Custom includes
+#include "Fits.h"
 #include "Particles.h"
 #include "Utilities.h"
 
@@ -98,31 +99,89 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         hist->SetBinError(i, error);
     }
     
-    // Check the function pointer
-    typedef Double_t (*FitFuncType)(const Double_t*, const Double_t*);
-    FitFuncType fitFunc = mq->HER_mass_fit_model;
-    if (fitFunc == nullptr) {
-        std::cerr << "Function pointer is null." << std::endl;
-    }
-    TF1 *fit = new TF1("InvMassFit", mq->LER_mass_fit_model, mass_min, mass_max, 7);
-    //
-    //fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
-    //fit->SetLineColor(mq->line_color);
-    //fit->SetLineWidth(2);
-    //fit->SetNpx(1000);
-
     gStyle->SetErrorX(0);
 
-    hist->Draw("SAME E1");
+    TF1 *fit = new TF1("InvMassFit", Fits::GaussPlus3rdOrderPoly, mass_min, mass_max, 7);
+    
+    fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
+    fit->SetParLimits(0, 0, 1000); // A > 0
+    fit->SetParameter(1, 1535.19);
+    fit->SetParLimits(1, 1400, 1590);
+    fit->SetParameter(2, 28.57);
+    fit->SetParLimits(2, 15, 45);
+    fit->SetLineColor(mq->line_color);
+    fit->SetLineWidth(2);
+    fit->SetNpx(1000);
+
     hist->Fit("InvMassFit", "R");
 
-    //fit->Draw("SAME");
+    Double_t A = fit->GetParameter(0);
+    Double_t mu = fit->GetParameter(1);
+    Double_t mu_err = fit->GetParError(1);
+    Double_t sigma = fit->GetParameter(2);
+    Double_t sigma_err = fit->GetParError(2);
+    Double_t a = fit->GetParameter(3);
+    Double_t b = fit->GetParameter(4);
+    Double_t c = fit->GetParameter(5);
+    Double_t d = fit->GetParameter(6);
+    
+    // Use parameters of fit to plot individual contributions
+    int n_pts = 10000;
+    Double_t m[n_pts];
+    Double_t y_signal[n_pts];
+    Double_t y_background[n_pts];
+
+    double dm = (mass_max - mass_min) / (n_pts -  1);
+
+    for (int i = 0; i < n_pts; i++) {
+        m[i] = mass_min + dm * i;
+        y_signal[i] = A*TMath::Gaus(m[i], mu, sigma);
+        y_background[i] = a*m[i]*m[i]*m[i] + b*m[i]*m[i] + c*m[i] + d;
+    }
+    
+    TGraph *background = new TGraph(n_pts, m, y_background);
+    background->SetLineWidth(2);
+    background->SetLineStyle(kDashed);
+    background->SetLineColor(kBlue);
+
+    TGraph *signal = new TGraph(n_pts, m, y_signal);
+    signal->SetLineWidth(2);
+    signal->SetLineColor(kOrange);
+    // Signal can only be seen if vertical scale starts at 0
+    // using hist->SetMinimum(0); but it doesn't look all that good
+
+    hist->Draw("SAME E1");
+    fit->Draw("SAME");
+    background->Draw("SAME");
+
+
+    TLegend* legend = new TLegend(0.7, 0.1, 0.9, 0.3); // Bottom right corner
+    legend->AddEntry(hist, "Data (Minimum Bias)", "f");
+    legend->AddEntry(fit, "Signal + Background", "l");
+    legend->AddEntry(background, "Background", "l");
+    legend->Draw();
+
+    TLatex fitMean;
+    TLatex fitSigma;
+    // Set normalized device coordinates, makes (x,y) position
+    // range between 0 and 1 instead of in the actual data's range
+    fitMean.SetNDC(); 
+    fitSigma.SetNDC(); 
+    fitMean.SetTextSize(0.03);
+    fitSigma.SetTextSize(0.03);
+    std::string mean_result = "#mu = " + floatToString(mu, 2) + " #pm " + floatToString(mu_err, 2) + " MeV";
+    std::string sigma_result = "#sigma = " + floatToString(sigma, 2) + " #pm " + floatToString(sigma_err, 2) + " MeV";
+    fitMean.DrawLatex(0.35, 0.35, mean_result.c_str()); 
+    fitMean.DrawLatex(0.35, 0.30, sigma_result.c_str()); 
 
     canvas->SaveAs(mq->LER_filename.c_str());
 
     delete hist;
     delete fit;
+    delete background;
+    delete signal;
     delete canvas;
+    delete legend;
 }
 
 void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
@@ -140,7 +199,7 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
 
 
-    PVTree->Draw("recMassKKTest>>hist", mq->default_cut, "hist");
+    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
 
     hist->SetFillColor(mq->fill_color);
     hist->SetLineColor(kBlack);
@@ -417,7 +476,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "DID1TwoWays.root";
+    std::string data = "DID1234.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -466,10 +525,10 @@ void MakeHists() {
     //MakeKLMassHist(V0Tree);
     //MakeKLifeHist(V0Tree);
     
-    MakeInvMassHist(&tq, PVTree, 300);
+    //MakeInvMassHist(&tq, PVTree, 300);
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
-    //LowEnergyResonanceFit(&pq, PVTree, 75);
+    LowEnergyResonanceFit(&tq, PVTree, 75);
     //HighEnergyResonanceFit(&tq, PVTree, 1020);
 
     //MakeInvMassHist(&hq, PVTree, 80);
