@@ -22,8 +22,8 @@ public:
     Double_t mass_max;
     Double_t life_min;
     Double_t life_max;
-    Double_t (*mass_fit_model)(const Double_t*, const Double_t*);
-    Double_t (*life_fit_model)(const Double_t*, const Double_t*);
+    Double_t (*mass_fit_model)(Double_t*, Double_t*);
+    Double_t (*life_fit_model)(Double_t*, Double_t*);
 
     std::string invariant_mass_label;
 
@@ -48,8 +48,8 @@ public:
     std::string LER_filename; // LER: Low-energy resonance
     std::string HER_filename; // HER: High-energy 
 
-    Double_t (*LER_mass_fit_model)(const Double_t*, const Double_t*);
-    Double_t (*HER_mass_fit_model)(const Double_t*, const Double_t*);
+    Double_t (*LER_mass_fit_model)(Double_t*, Double_t*);
+    Double_t (*HER_mass_fit_model)(Double_t*, Double_t*);
 
     float LER_mass_min;
     float LER_mass_max;
@@ -128,10 +128,10 @@ private:
     Tetraquark() : Multiquark("Tetraquark") {
         this->default_cut = Cuts::TetraquarkCut;
         this->fill_color = kTeal;
-        this->line_color = static_cast<EColor>(kTeal + 4);
+        this->line_color = static_cast<EColor>(kRed);
 
         // MeV
-        this->LER_mass_min = 1200;
+        this->LER_mass_min = 1300;
         this->LER_mass_max = 2700;
         this->HER_mass_min = 2900;
         this->HER_mass_max = 8000;
