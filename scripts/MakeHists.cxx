@@ -15,6 +15,60 @@
 #include <TStyle.h>
 #include <TTree.h>
 
+void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
+    Multiquark* mq = dynamic_cast<Multiquark*>(p);
+    if (!mq) {
+        throw std::runtime_error("This function is for multiquarks ONLY!");
+    }
+
+    // HER: High-energy Resonance
+    float mass_min = mq->HER_mass_min;
+    float mass_max = mq->HER_mass_max;
+
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+
+    std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
+    TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
+
+    hist->SetFillColor(mq->fill_color);
+    hist->SetLineColor(kBlack);
+    hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
+    hist->GetYaxis()->SetTitle("Counts per bin");
+
+    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
+
+    // Set bin errors, assuming bin count is Poisson distributed
+    for (int i = 1; i <= hist->GetNbinsX(); i++) {
+        double n = hist->GetBinContent(i);
+        double error = sqrt(n);
+        hist->SetBinError(i, error);
+    }
+
+    TF1 *fit = new TF1("InvMassFit", mq->HER_mass_fit_model, mass_min, mass_max, 3);
+    
+    fit->SetParNames("a", "b", "c", "x-offset");
+    fit->SetParameter(3, 3000);
+    //fit->SetParLimits(0, 0, 7000);
+    //fit->SetParLimits(1, 0, 7000);
+    //fit->SetParLimits(2, 0, 7000);
+    fit->SetLineColor(mq->line_color);
+    fit->SetLineWidth(2);
+    fit->SetNpx(1000);
+
+    gStyle->SetErrorX(0);
+
+    hist->Draw("SAME E1");
+    hist->Fit("InvMassFit", "R");
+
+    fit->Draw("SAME");
+
+    canvas->SaveAs(mq->HER_filename.c_str());
+
+    delete hist;
+    delete fit;
+    delete canvas;
+}
+
 void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
     if (!mq) {
@@ -43,20 +97,26 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         double error = sqrt(n);
         hist->SetBinError(i, error);
     }
-
-    TF1 *fit = new TF1("InvMassFit", mq->mass_fit_model, mass_min, mass_max, 7);
     
-    fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
-    fit->SetLineColor(mq->line_color);
-    fit->SetLineWidth(2);
-    fit->SetNpx(1000);
+    // Check the function pointer
+    typedef Double_t (*FitFuncType)(const Double_t*, const Double_t*);
+    FitFuncType fitFunc = mq->HER_mass_fit_model;
+    if (fitFunc == nullptr) {
+        std::cerr << "Function pointer is null." << std::endl;
+    }
+    TF1 *fit = new TF1("InvMassFit", mq->LER_mass_fit_model, mass_min, mass_max, 7);
+    //
+    //fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
+    //fit->SetLineColor(mq->line_color);
+    //fit->SetLineWidth(2);
+    //fit->SetNpx(1000);
 
     gStyle->SetErrorX(0);
 
     hist->Draw("SAME E1");
     hist->Fit("InvMassFit", "R");
 
-    fit->Draw("SAME");
+    //fit->Draw("SAME");
 
     canvas->SaveAs(mq->LER_filename.c_str());
 
@@ -80,7 +140,7 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
 
 
-    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
+    PVTree->Draw("recMassKKTest>>hist", mq->default_cut, "hist");
 
     hist->SetFillColor(mq->fill_color);
     hist->SetLineColor(kBlack);
@@ -357,7 +417,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "DID3.root";
+    std::string data = "DID1TwoWays.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -407,9 +467,10 @@ void MakeHists() {
     //MakeKLifeHist(V0Tree);
     
     MakeInvMassHist(&tq, PVTree, 300);
-    MakeInvMassHist(&pq, PVTree, 300);
-    MakeInvMassHist(&hq, PVTree, 200);
-    LowEnergyResonanceFit(&tq, PVTree, 50);
+    //MakeInvMassHist(&pq, PVTree, 300);
+    //MakeInvMassHist(&hq, PVTree, 200);
+    //LowEnergyResonanceFit(&pq, PVTree, 75);
+    //HighEnergyResonanceFit(&tq, PVTree, 1020);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
