@@ -45,11 +45,16 @@ public:
     EColor line_color;
 
     std::string output_filename;
-    std::string LER_filename;
+    std::string LER_filename; // LER: Low-energy resonance
+    std::string HER_filename; // HER: High-energy 
 
-    // LER: Low-energy resonance
+    Double_t (*LER_mass_fit_model)(const Double_t*, const Double_t*);
+    Double_t (*HER_mass_fit_model)(const Double_t*, const Double_t*);
+
     float LER_mass_min;
     float LER_mass_max;
+    float HER_mass_min;
+    float HER_mass_max;
 
 protected:
     Multiquark(std::string name) : Particle(name) {}
@@ -125,11 +130,15 @@ private:
         this->fill_color = kTeal;
         this->line_color = static_cast<EColor>(kTeal + 4);
 
+        // MeV
         this->LER_mass_min = 1200;
         this->LER_mass_max = 2700;
+        this->HER_mass_min = 2900;
+        this->HER_mass_max = 8000;
 
         this->output_filename = "KKInvMass.png";
         this->LER_filename = "KKInvMassLowEnergy.png";
+        this->HER_filename = "KKInvMassHighEnergy.png";
 
         this->name_formatted = "K^{0}_{s}K^{0}_{s}";
 
@@ -144,7 +153,8 @@ private:
         this->life_min = 0;
         this->life_max = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass_fit_model = Fits::GaussPlus3rdOrderPoly;
+        this->LER_mass_fit_model = Fits::GaussPlus3rdOrderPoly;
+        this->HER_mass_fit_model = Fits::exp_quadratic;
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{K^{0}_{s}K^{0}_{s}} [MeV]";
@@ -164,11 +174,14 @@ private:
         this->fill_color = kCyan;
         this->line_color = static_cast<EColor>(kCyan + 4);
 
-        this->LER_mass_min = 1400;
+        this->LER_mass_min = 1800;
         this->LER_mass_max = 3100;
+        this->HER_mass_min = 2900;
+        this->HER_mass_max = 8000;
 
         this->output_filename = "KLInvMass.png";
         this->LER_filename = "KLInvMassLowEnergy.png";
+        this->HER_filename = "KLInvMassHighEnergy.png";
 
         this->name_formatted = "K^{0}_{s}#Lambda^{0}";
 
@@ -183,7 +196,8 @@ private:
         this->life_min = 0;
         this->life_max = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass_fit_model = Fits::GaussPlus3rdOrderPoly;
+        this->LER_mass_fit_model = Fits::GaussPlus3rdOrderPoly;
+        this->HER_mass_fit_model = Fits::exp_quadratic;
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{K^{0}_{s}#Lambda^{0}} [MeV]";
@@ -204,7 +218,7 @@ private:
         this->fill_color = static_cast<EColor>(kGreen - 6);
         this->line_color = static_cast<EColor>(kGreen - 8);
 
-        this->LER_mass_min = 1600;
+        this->LER_mass_min = 1800;
         this->LER_mass_max = 3300;
 
         this->output_filename = "LLInvMass.png";
