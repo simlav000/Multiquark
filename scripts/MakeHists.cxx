@@ -26,7 +26,8 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     float mass_min = mq->HER_mass_min;
     float mass_max = mq->HER_mass_max;
 
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 1000);
+    canvas->Divide(1, 2);
 
     std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
@@ -38,12 +39,6 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
 
-    // Set bin errors, assuming bin count is Poisson distributed
-    for (int i = 1; i <= hist->GetNbinsX(); i++) {
-        double n = hist->GetBinContent(i);
-        double error = sqrt(n);
-        hist->SetBinError(i, error);
-    }
 
     TF1 *fit = new TF1("InvMassFit", mq->HER_mass_fit_model, mass_min, mass_max, 3);
     
@@ -58,15 +53,73 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     gStyle->SetErrorX(0);
 
+    TH1F *significance_plot = new TH1F("significance", "sigplot", num_bins, mass_min, mass_max);
+
+    // Set bin errors, assuming bin count is Poisson distributed, 
+    // and simultaneously perform bump hunt.
+    for (int i = 1; i <= hist->GetNbinsX(); i++) {
+        // First, setting errors on the original histogram
+        double n = hist->GetBinContent(i);
+        double error = sqrt(n);
+        hist->SetBinError(i, error);
+
+        // Next, we perform a bump-hunt by taking a copy of the original histogram,
+        // deleting a bin, fitting the background to the remaining bins,
+        // and computing up to how many standard deviations the "removed" bin 
+        // differs from the fit value. We do this for every bin to obtain a 
+        // significance plot.
+        TH1F *hist_copy = (TH1F*)hist->Clone("hist_copy");
+        hist_copy->SetBinContent(i, 0); // "Remove" bin
+
+        TF1 *bkg_fit = new TF1("Background fit", mq->HER_mass_fit_model, mass_min, mass_max, 3);
+        bkg_fit->SetParameter(3, 3000); // High-energy resonances are found near m > 3000 MeV
+
+        int fit_status = hist_copy->Fit(bkg_fit, "Q"); // Suppress output
+            if (fit_status != 0) {
+            std::cerr << "Fit failed for bin " << i << std::endl;
+            delete hist_copy;
+            delete bkg_fit;
+            break;
+        }
+
+        double a = bkg_fit->GetParameter(0);
+        double b = bkg_fit->GetParameter(1);
+        double c = bkg_fit->GetParameter(2);
+        double x_offset = bkg_fit->GetParameter(3);
+
+        double bin_width = (mass_max - mass_min) / hist_copy->GetNbinsX();
+        double bin_center = mass_min + (i + 0.5) * bin_width;
+        double x = hist_copy->GetBinCenter(i);
+
+        // curious
+        std::cout << "ROOT: " << x << std::endl;
+        std::cout << "HAND: " << bin_center << std::endl;
+
+        double fit_value = TMath::Exp(-(a*x*x + b*x + c));
+       
+        double delta = n - fit_value;
+        double sigma = delta / error;
+
+        significance_plot->SetBinContent(i, sigma);
+
+        delete hist_copy;
+        delete bkg_fit;
+    }
+
+    canvas->cd(1);
     hist->Draw("SAME E1");
     hist->Fit("InvMassFit", "R");
-
     fit->Draw("SAME");
+
+    canvas->cd(2);
+    significance_plot->SetTitle("Significance Plot; Bin Center; Significance");
+    significance_plot->Draw();    
 
     canvas->SaveAs(mq->HER_filename.c_str());
 
     delete hist;
     delete fit;
+    delete significance_plot;
     delete canvas;
 }
 
@@ -528,8 +581,8 @@ void MakeHists() {
     //MakeInvMassHist(&tq, PVTree, 300);
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
-    LowEnergyResonanceFit(&tq, PVTree, 75);
-    //HighEnergyResonanceFit(&tq, PVTree, 1020);
+    //LowEnergyResonanceFit(&tq, PVTree, 75);
+    HighEnergyResonanceFit(&tq, PVTree, 1020);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
