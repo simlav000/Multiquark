@@ -72,3 +72,17 @@ identify the kaons and lambdas.
 
 <!--TODO: Use correct image -->
 ![Kaon invariant mass histogram](../Histograms/20240618/KMass_Before_and_After_Cuts.png)
+
+## Bump Hunt Technique
+Given a $K^0_sK^0_s$ invariant mass histogram, for example, the high-energy
+portion of the spectrum can be searched for resonant states using the bump-hunt
+technique. The goal is to search for bins which are suspiciously large compared
+to the background. Each bin is a candidate in this search. The idea is to make
+a copy of the original histogram with a single bin removed, doing this
+iteratively for each bin (one at a time). The background model is then fit to
+this resulting histogram, and the difference $\Delta$  between the missing bin and the
+background model is computed. The standard deviation of this difference is
+given by $\Delta/\sqrt{n}$ where $n$ is the count of the removed bin. A plot of each
+standard deviation is created, showing the significance of the $\Delta$ measurement. 
+A significance of $3\sigma$ is considered possible observation while those with
+$5\sigma$ are considered discovery.
