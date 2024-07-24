@@ -35,6 +35,23 @@ $$
 by the identity $\cosh^2(x) - \sinh^2(x) = 1$. And of course we also have
 $$p_T = \sqrt{p_x^2 + p_y^2}$$
 
+## Good Runs Lists
+In the ATLAS experiment, Good Runs Lists (GRLs) are lists
+characterizing the overall quality of data, related to the
+functioning of detector components at the time. These runs 
+are composed of luminosity blocks (LBs), which are spans of 
+time lasting roughly a minute. A good run is one in which
+all data quality flags are green, which occurs when 
+conditions within the detector are stable. 
+
+The `GRLSelectorAlg` is an algorithm that runs a GRL against the data. It is enable by adding the following lines to the `config.yaml` in the `data/` directory:
+```yaml
+EventCleaning:
+    runEventCleaning: True
+```
+and then running the analysis job with the command:
+`ATestRun_eljob.py --config-path=/relative/path/to/config.yaml --submission-dir=submitDir`
+
 ## Determining lifetime of particles
 The mean lifetime of a particle can be determined using
 $$ d = ct\gamma\beta$$
@@ -86,3 +103,36 @@ given by $\Delta/\sqrt{n}$ where $n$ is the count of the removed bin. A plot of 
 standard deviation is created, showing the significance of the $\Delta$ measurement. 
 A significance of $3\sigma$ is considered possible observation while those with
 $5\sigma$ are considered discovery.
+
+The background fit of the form 
+$$ y(x) = e^{-(ax^2+bx+c)} $$
+is performed yielding best-fit
+parameters, each with their own uncertainties. One 
+way to propagate the uncertainty of such an 
+expression is by using a toy-monte carlo. By simply
+defining gaussian distributions with means equal to
+the nominal value of the best-fit-parameters, and 
+the standard deviations equal to their errors, you 
+can randomly sample fit parameters, and repeatedly
+evaluate the fit function with these parameters at
+the desired point. This yields a distribution whose
+mean you can call the value of the function at that 
+point, and whose standard error on the mean is the 
+uncertainty of the measurement. If 
+you believe the errors on the best-fit parameters 
+are not representative of the actual uncertainties, 
+you can widen them by some percentage of the mean.
+Doing so seems like a tricky art.
+
+## Look-Elsewhere Effect
+Since we are iteratively searching the space for a 
+signal exceeding $5\sigma$, we ought to address this
+important effect. Consider the probability of
+knowing a $5\sigma$ signal should exist at 6500 MeV
+and finding a $5\sigma$ signal  exactly there. 
+Now compare that to the probability of finding a 
+$5\sigma$ signal anywhere. The latter is much more 
+likely, meaning such a finding is much less 
+significant than a discovery made when searching a
+specific location. To address this, I'm not sure
+what I have to do????
