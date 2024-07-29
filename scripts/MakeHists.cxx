@@ -17,12 +17,17 @@
 #include <TStyle.h>
 #include <TTree.h>
 
-void HighEnergyResonanceFitTest(Particle* p, TTree* PVTree, int num_bins) {
+void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
     if (!mq) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
     }
 
+    float mass_min = 2900;
+    float mass_max = 8000;
+    // HER: High-energy Resonance
+    //float mass_min = mq->HER_mass_min;
+    //float mass_max = mq->HER_mass_max;
 
     // Create and draw histogram canvas
     TCanvas *hist_canvas = new TCanvas("hist_canvas", "Histogram Canvas", 1000, 500);
@@ -50,97 +55,28 @@ void HighEnergyResonanceFitTest(Particle* p, TTree* PVTree, int num_bins) {
     hist->Draw();
     fit->Draw("SAME");
 
-    hist_canvas->SaveAs((mq->HER_filename + "_hist.png").c_str());
+    hist_canvas->SaveAs((mq->HER_filename).c_str());
 
 
-    TCanvas *residuals_canvas = new TCanvas("residuals", "Histogram Canvas", 1000, 500);
-    TH1F *residuals = new TH1F("hist", "Residuals", num_bins, mass_min, mass_max);
+    TCanvas *residuals_canvas = new TCanvas("Significance plot", "Histogram Canvas", 1000, 500);
+    TH1F *residuals = new TH1F("hist", "Significance", num_bins, mass_min, mass_max);
 
     residuals->SetLineColor(kBlack);
     residuals->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
     residuals->GetYaxis()->SetTitle("Counts per bin");
 
+    int count = 0;
     for (int i = 1; i <= hist->GetNbinsX(); i++) {
-        double bin_value = hist->GetBinContent(i);
-        double bin_error = hist->GetBinError(i);
-        std::cout << "Bin count: " << bin_value << std::endl;
-        double fit_value = fit->Eval(hist->GetBinCenter(i));       
+        count++;
 
-        double residual = bin_value - fit_value;
-        double significance = residual / bin_error;
-        residuals->SetBinContent(i, significance);
-    }
-
-    residuals->Draw();
-    residuals_canvas->SaveAs("residuals.png");
-
-    //delete hist;
-    //delete fit;
-    //delete significance_plot;
-    //delete hist_canvas;
-    //delete sig_canvas;
-}
-
-void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
-    Multiquark* mq = dynamic_cast<Multiquark*>(p);
-    if (!mq) {
-        throw std::runtime_error("This function is for multiquarks ONLY!");
-    }
-
-    // HER: High-energy Resonance
-    //float mass_min = mq->HER_mass_min;
-    //float mass_max = mq->HER_mass_max;
-
-    float mass_min = 3900;
-    float mass_max = 4100;
-
-    // Create and draw histogram canvas
-    TCanvas *hist_canvas = new TCanvas("hist_canvas", "Histogram Canvas", 1000, 500);
-    std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
-    TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
-
-    hist->SetFillColor(mq->fill_color);
-    hist->SetLineColor(kBlack);
-    hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
-    hist->GetYaxis()->SetTitle("Counts per bin");
-
-    PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
-
-    std::cout << hist->GetBinCenter(0) << ", " << hist->GetBinContent(0) << ", " << hist->GetBinError(0) << ", " << std::endl;
-
-    TF1 *fit = new TF1("InvMassFit", mq->HER_mass_fit_model, mass_min, mass_max, 3); 
-    fit->SetParNames("a", "b", "c", "x-offset");
-    fit->SetParameter(3, 3000);
-    fit->SetLineColor(mq->line_color);
-    fit->SetLineWidth(2);
-    fit->SetNpx(1000);
-
-    gStyle->SetErrorX(0);
-
-    hist->Fit(fit);
-
-
-    // Create and draw significance plot canvas
-    TCanvas *sig_canvas = new TCanvas("sig_canvas", "Significance Plot Canvas", 1000, 500);
-    TH1F *significance_plot = new TH1F("significance", "Significance Plot", num_bins, mass_min, mass_max);
-
-    // Set bin errors and perform bump hunt
-    for (int i = 1; i <= hist->GetNbinsX(); i++) {
-        double n = hist->GetBinContent(i);
-        double error = sqrt(n);
-        std::cout << "n: " << n << std::endl;
-        std::cout << "n_err: " << error << std::endl;
-        hist->SetBinError(i, error);
-
-        std::vector<double> x_values, y_values, y_err;
+        std::vector<double> x, y;
         for (int j = 1; j <= hist->GetNbinsX(); j++) {
-            if (j == i) continue; // exclude current bin
-            x_values.push_back(hist->GetBinCenter(j));
-            y_values.push_back(hist->GetBinContent(j));
-            y_err.push_back(hist->GetBinError(j));
+            if (i == j) continue;
+            x.push_back(hist->GetBinCenter(j));
+            y.push_back(hist->GetBinContent(j));
         }
 
-        TGraphErrors graph(x_values.size(), &x_values[0], &y_values[0], nullptr, &y_err[0]);
+        TGraph graph(x.size(), &x[0], &y[0]);
 
         TF1 *bkg_fit = new TF1("Background fit", mq->HER_mass_fit_model, mass_min, mass_max, 3);
         bkg_fit->SetParameter(3, 3000);
@@ -149,33 +85,24 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         if (fit_status != 0) {
             std::cerr << "Fit failed for bin " << i << std::endl;
             delete bkg_fit;
-            break;
+            continue; 
         }
 
-        double fit_value = bkg_fit->Eval(hist->GetBinCenter(i));       
-        double delta = n - fit_value;
-        double sigma = delta / error;
+        double bin_value = hist->GetBinContent(i);
+        double bin_error = hist->GetBinError(i);
+        std::cout << "Bin error: " << bin_error << std::endl;
+        double fit_value = fit->Eval(hist->GetBinCenter(i));       
 
-        significance_plot->SetBinContent(i, delta);
-
-        delete bkg_fit;
+        double residual = bin_value - fit_value;
+        double significance = residual / bin_error;
+        residuals->SetBinContent(i, significance);
     }
+    std::cout << "count: " << count << std::endl;
 
-    hist->Draw("p");
-    fit->Draw("SAME");
-
-    hist_canvas->SaveAs((mq->HER_filename + "_hist.png").c_str());
-
-    significance_plot->SetTitle("Significance Plot; Bin Center; Significance");
-    significance_plot->Draw("p");
-
-    sig_canvas->SaveAs((mq->HER_filename + "_sig.png").c_str());
-
-    //delete hist;
-    //delete fit;
-    //delete significance_plot;
-    //delete hist_canvas;
-    //delete sig_canvas;
+    residuals->Draw();
+    
+    std::string fname = "Significance" + std::to_string(num_bins) + "bins.png";
+    residuals_canvas->SaveAs(fname.c_str());
 }
 
 void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
@@ -584,7 +511,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "DID12.root";
+    std::string data = "DID1234.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -637,7 +564,7 @@ void MakeHists() {
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 75);
-    HighEnergyResonanceFitTest(&tq, PVTree, 50);
+    HighEnergyResonanceFit(&tq, PVTree, 100);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
