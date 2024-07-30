@@ -220,9 +220,12 @@ private:
 
         this->LER_mass_min = 1800;
         this->LER_mass_max = 3300;
+        this->HER_mass_min = 2900;
+        this->HER_mass_max = 8000;
 
         this->output_filename = "LLInvMass.png";
         this->LER_filename = "LLInvMassLowEnergy.png";
+        this->HER_filename = "LLInvMassHighEnergy.png";
 
         this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
@@ -237,7 +240,8 @@ private:
         this->life_min = 0;
         this->life_max = std::numeric_limits<double>::quiet_NaN();
 
-        this->mass_fit_model = Fits::GaussPlus3rdOrderPoly; // Subject to change
+        this->LER_mass_fit_model = Fits::GaussPlus3rdOrderPoly; // Subject to change
+        this->LER_mass_fit_model = Fits::exp_quadratic; // Subject to change
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{#Lambda^{0}#Lambda^{0}} [MeV]";
