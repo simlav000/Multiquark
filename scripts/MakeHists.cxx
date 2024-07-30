@@ -18,7 +18,7 @@
 #include <TLegend.h>
 #include <TStyle.h>
 #include <TTree.h>
-
+#include <TPaveStats.h>
 
 void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
@@ -26,8 +26,8 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
     }
 
-    float mass_min = 2900;
-    float mass_max = 8000;
+    double mass_min = 2900;
+    double mass_max = 8000;
     // HER: High-energy Resonance
     //float mass_min = mq->HER_mass_min;
     //float mass_max = mq->HER_mass_max;
@@ -37,11 +37,28 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     std::string hist_name = mq->name_formatted + " Invariant Mass Distribution";
     TH1F *hist = new TH1F("hist", hist_name.c_str(), num_bins, mass_min, mass_max);
 
+    double binSize = hist->GetBinWidth(1);
+
+    gStyle->SetOptStat("e"); 
+
     hist->SetLineColor(kBlack);
     hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
     hist->GetYaxis()->SetTitle("Counts per bin");
-
+    
     PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
+    hist_canvas->Update();
+
+    // Adding bin size to stats box
+    TPaveStats* stats = (TPaveStats*)hist->GetListOfFunctions()->FindObject("stats");
+    stats->SetName("custom stats box");
+    TList* listOfLines = stats->GetListOfLines();
+    TLatex* binSizeLatex = new TLatex(0, 0, Form("Bin Size = %6.2f", binSize));
+    binSizeLatex->SetTextFont(stats->GetTextFont());
+    binSizeLatex->SetTextSize(stats->GetTextSize());
+    listOfLines->Add(binSizeLatex);
+    hist->SetStats(0);
+    hist_canvas->Modified();
+
 
     TF1 *fit = new TF1("InvMassFit", mq->HER_mass_fit_model, mass_min, mass_max, 4); 
 
@@ -92,8 +109,11 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
         TGraph graph(x.size(), &x[0], &y[0]);
 
-        TF1 *bkg_fit = new TF1("Background fit", mq->HER_mass_fit_model, mass_min, mass_max, 3);
-        bkg_fit->SetParameter(3, 3000);
+        TF1 *bkg_fit = new TF1("Background fit", mq->HER_mass_fit_model, mass_min, mass_max, 4);
+        bkg_fit->SetParameter(0, -2.56385e-08);
+        bkg_fit->SetParameter(1, 0.00078);
+        bkg_fit->SetParameter(2, -10.4492);
+        bkg_fit->SetParameter(3, 1452);
 
         int fit_status = graph.Fit(bkg_fit, "Q");
         if (fit_status != 0) {
@@ -104,14 +124,12 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
         double bin_value = hist->GetBinContent(i);
         double bin_error = hist->GetBinError(i);
-        std::cout << "Bin error: " << bin_error << std::endl;
-        double fit_value = fit->Eval(hist->GetBinCenter(i));       
+        double fit_value = bkg_fit->Eval(hist->GetBinCenter(i));       
 
         double residual = bin_value - fit_value;
         double significance = residual / bin_error;
         residuals->SetBinContent(i, significance);
     }
-    std::cout << "count: " << count << std::endl;
 
     residuals->Draw();
     
@@ -578,7 +596,7 @@ void MakeHists() {
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 75);
-    HighEnergyResonanceFit(&pq, PVTree, 25);
+    HighEnergyResonanceFit(&tq, PVTree, 1000);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
