@@ -26,11 +26,12 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
     }
 
-    double mass_min = 2900;
-    double mass_max = 8000;
+    std::cout << "testa" << std::endl;
+    std::cout << mq->HER_mass_fit_model << std::endl;
+    std::cout << "testb" << std::endl;
     // HER: High-energy Resonance
-    //float mass_min = mq->HER_mass_min;
-    //float mass_max = mq->HER_mass_max;
+    float mass_min = mq->HER_mass_min;
+    float mass_max = mq->HER_mass_max;
 
     // Create and draw histogram canvas
     TCanvas *hist_canvas = new TCanvas("hist_canvas", "Histogram Canvas", 1000, 500);
@@ -52,25 +53,27 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     TPaveStats* stats = (TPaveStats*)hist->GetListOfFunctions()->FindObject("stats");
     stats->SetName("custom stats box");
     TList* listOfLines = stats->GetListOfLines();
+    listOfLines->Print();
     TLatex* binSizeLatex = new TLatex(0, 0, Form("Bin Size = %6.2f", binSize));
     binSizeLatex->SetTextFont(stats->GetTextFont());
     binSizeLatex->SetTextSize(stats->GetTextSize());
     listOfLines->Add(binSizeLatex);
     hist->SetStats(0);
     hist_canvas->Modified();
-
+    
 
     TF1 *fit = new TF1("InvMassFit", mq->HER_mass_fit_model, mass_min, mass_max, 4); 
 
     fit->SetParNames("a", "b", "c", "x-offset");
-    fit->SetParameter(3, 3000);
+    fit->SetParameter(0, -2.56385e-08);
+    fit->SetParameter(1, 0.00078);
+    fit->SetParameter(2, -10.4492);
+    fit->SetParameter(3, 1452);
     fit->SetLineColor(mq->line_color);
     fit->SetLineWidth(2);
     fit->SetNpx(1000);
 
     gStyle->SetErrorX(0);
-
-    std::cout << "test" << std::endl;
 
     // Try fitting and catch any potential exceptions
     try {
@@ -83,8 +86,7 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     hist->Draw();
     fit->Draw("SAME");
 
-
-    hist_canvas->SaveAs((mq->HER_filename).c_str());
+    hist_canvas->SaveAs((mq->HER_filename + std::to_string(num_bins)  + "Bins.png").c_str());
 
 
     TCanvas *residuals_canvas = new TCanvas("Significance plot", "Histogram Canvas", 1000, 500);
@@ -110,10 +112,10 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         TGraph graph(x.size(), &x[0], &y[0]);
 
         TF1 *bkg_fit = new TF1("Background fit", mq->HER_mass_fit_model, mass_min, mass_max, 4);
-        bkg_fit->SetParameter(0, -2.56385e-08);
-        bkg_fit->SetParameter(1, 0.00078);
-        bkg_fit->SetParameter(2, -10.4492);
-        bkg_fit->SetParameter(3, 1452);
+        bkg_fit->SetParameter(0, -1.91227e-08);
+        bkg_fit->SetParameter(1, 0.00079);
+        bkg_fit->SetParameter(2, -9.59125);
+        bkg_fit->SetParameter(3, 569);
 
         int fit_status = graph.Fit(bkg_fit, "Q");
         if (fit_status != 0) {
@@ -133,7 +135,7 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     residuals->Draw();
     
-    std::string fname = "Significance" + std::to_string(num_bins) + "bins.png";
+    std::string fname = mq->HER_filename + "Significance" + std::to_string(num_bins) + "Bins.png";
     residuals_canvas->SaveAs(fname.c_str());
 }
 
@@ -596,7 +598,7 @@ void MakeHists() {
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 75);
-    HighEnergyResonanceFit(&tq, PVTree, 1000);
+    HighEnergyResonanceFit(&hq, PVTree, 1000);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
