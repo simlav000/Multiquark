@@ -3,6 +3,8 @@
 #include "Particles.h"
 #include "Utilities.h"
 
+#include <stdexcept>
+
 // ROOT includes
 #include <TBranch.h>
 #include <TCanvas.h>
@@ -16,6 +18,7 @@
 #include <TLegend.h>
 #include <TStyle.h>
 #include <TTree.h>
+
 
 void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
@@ -41,6 +44,7 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
 
     TF1 *fit = new TF1("InvMassFit", mq->HER_mass_fit_model, mass_min, mass_max, 4); 
+
     fit->SetParNames("a", "b", "c", "x-offset");
     fit->SetParameter(3, 3000);
     fit->SetLineColor(mq->line_color);
@@ -49,11 +53,19 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     gStyle->SetErrorX(0);
 
-    hist->Fit(fit);
+    std::cout << "test" << std::endl;
 
+    // Try fitting and catch any potential exceptions
+    try {
+        hist->Fit(fit);
+    } catch (const std::exception& e) {
+        std::cerr << "Exception during fit: " << e.what() << std::endl;
+        return;
+    }
 
     hist->Draw();
     fit->Draw("SAME");
+
 
     hist_canvas->SaveAs((mq->HER_filename).c_str());
 
@@ -64,6 +76,8 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     residuals->SetLineColor(kBlack);
     residuals->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
     residuals->GetYaxis()->SetTitle("Counts per bin");
+
+
 
     int count = 0;
     for (int i = 1; i <= hist->GetNbinsX(); i++) {
@@ -564,7 +578,7 @@ void MakeHists() {
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 75);
-    HighEnergyResonanceFit(&tq, PVTree, 100);
+    HighEnergyResonanceFit(&pq, PVTree, 25);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
