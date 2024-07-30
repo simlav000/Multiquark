@@ -138,7 +138,7 @@ private:
 
         this->output_filename = "KKInvMass.png";
         this->LER_filename = "KKInvMassLowEnergy.png";
-        this->HER_filename = "KKInvMassHighEnergy.png";
+        this->HER_filename = "KKInvMassHighEnergy";
 
         this->name_formatted = "K^{0}_{s}K^{0}_{s}";
 
@@ -181,7 +181,7 @@ private:
 
         this->output_filename = "KLInvMass.png";
         this->LER_filename = "KLInvMassLowEnergy.png";
-        this->HER_filename = "KLInvMassHighEnergy.png";
+        this->HER_filename = "KLInvMassHighEnergy";
 
         this->name_formatted = "K^{0}_{s}#Lambda^{0}";
 
@@ -220,12 +220,12 @@ private:
 
         this->LER_mass_min = 1800;
         this->LER_mass_max = 3300;
-        this->HER_mass_min = 2900;
+        this->HER_mass_min = 3200;
         this->HER_mass_max = 8000;
 
         this->output_filename = "LLInvMass.png";
         this->LER_filename = "LLInvMassLowEnergy.png";
-        this->HER_filename = "LLInvMassHighEnergy.png";
+        this->HER_filename = "LLInvMassHighEnergy";
 
         this->name_formatted = "#Lambda^{0}#Lambda^{0}";
 
@@ -241,7 +241,7 @@ private:
         this->life_max = std::numeric_limits<double>::quiet_NaN();
 
         this->LER_mass_fit_model = Fits::GaussPlus3rdOrderPoly; // Subject to change
-        this->LER_mass_fit_model = Fits::exp_quadratic; // Subject to change
+        this->HER_mass_fit_model = Fits::exp_quadratic; // Subject to change
         this->life_fit_model = nullptr;
 
         this->invariant_mass_label = "m_{#Lambda^{0}#Lambda^{0}} [MeV]";
