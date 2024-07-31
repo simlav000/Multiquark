@@ -10,7 +10,16 @@ namespace Fits {
     }
     
     inline Double_t GaussPlus3rdOrderPoly(Double_t *x, Double_t *par) {
-        return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3]*x[0]*x[0]*x[0] + par[4]*x[0]*x[0] + par[5]*x[0] +  par[6];  // Gaussian + 2nd order polynomial
+        return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3]*x[0]*x[0]*x[0] + par[4]*x[0]*x[0] + par[5]*x[0] +  par[6];  // Gaussian + 3rd order polynomial
+    }
+
+    inline Double_t TwoGaussPlus3rdOrderPoly(Double_t *x, Double_t *par) {
+        return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3]*TMath::Gaus(x[0], par[4], par[5]) + par[6]*x[0]*x[0]*x[0] + par[7]*x[0]*x[0] + par[8]*x[0] +  par[9];  // Gaussian + 3rd order polynomial
+    }
+
+    inline Double_t ThreeGaussPlus3rdOrderPoly(Double_t *x, Double_t *par) {
+        return par[0]*TMath::Gaus(x[0], par[1], par[2]) + par[3]*TMath::Gaus(x[0], par[4], par[5]) + par[6]*TMath::Gaus(x[0], par[7], par[8])
+        + par[9]*x[0]*x[0]*x[0] + par[10]*x[0]*x[0] + par[11]*x[0] +  par[12];  // Gaussian + 3rd order polynomial
     }
 
     inline Double_t ThirdOrderPoly(Double_t *x, Double_t *par) {
