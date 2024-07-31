@@ -26,9 +26,6 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
     }
 
-    std::cout << "testa" << std::endl;
-    std::cout << mq->HER_mass_fit_model << std::endl;
-    std::cout << "testb" << std::endl;
     // HER: High-energy Resonance
     float mass_min = mq->HER_mass_min;
     float mass_max = mq->HER_mass_max;
@@ -146,8 +143,8 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     }
         
     // LER: Low-energy Resonance
-    float mass_min = mq->LER_mass_min;
-    float mass_max = mq->LER_mass_max;
+    float mass_min = 1280;
+    float mass_max = 2000;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
@@ -170,29 +167,55 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     
     gStyle->SetErrorX(0);
 
-    TF1 *fit = new TF1("InvMassFit", Fits::GaussPlus3rdOrderPoly, mass_min, mass_max, 7);
+    TF1 *fit = new TF1("InvMassFit", Fits::ThreeGaussPlus3rdOrderPoly, mass_min, mass_max, 13);
     
-    fit->SetParNames("A", "mu", "sigma", "a", "b", "c", "d");
-    fit->SetParLimits(0, 0, 1000); // A > 0
-    fit->SetParameter(1, 1535.19);
-    fit->SetParLimits(1, 1400, 1590);
-    fit->SetParameter(2, 28.57);
-    fit->SetParLimits(2, 15, 45);
+    fit->SetParNames("A1", "mu1", "sigma1",
+                     "A2", "mu2", "sigma2", 
+                     "A3", "mu3", "sigma3");
+    fit->SetParLimits(0, 10, 1000); // A > 0
+    fit->SetParameter(1, 1320);
+    fit->SetParLimits(1, 1315, 1325);
+    fit->SetParameter(2, 30);
+    fit->SetParLimits(2, 5, 15);
+    fit->SetParLimits(3, 0, 1000);
+    fit->SetParameter(4, 1524);
+    fit->SetParLimits(4, 1400, 1590);
+    fit->SetParameter(5, 30);
+    fit->SetParLimits(5, 15, 45);
+    fit->SetParLimits(6, 0, 1000);
+    fit->SetParameter(7, 1710);
+    fit->SetParLimits(7, 1600, 1800);
+    fit->SetParLimits(8, 5, 35);
+    fit->SetParameter(8, 28.57);
+    fit->SetParameter(9, -1.20568e-06);
+    fit->SetParameter(10, 0.00165074);
+    fit->SetParameter(11, 5.5785);
+    fit->SetParameter(12, 527.087);
     fit->SetLineColor(mq->line_color);
     fit->SetLineWidth(2);
     fit->SetNpx(1000);
 
     hist->Fit("InvMassFit", "R");
 
-    Double_t A = fit->GetParameter(0);
-    Double_t mu = fit->GetParameter(1);
-    Double_t mu_err = fit->GetParError(1);
-    Double_t sigma = fit->GetParameter(2);
-    Double_t sigma_err = fit->GetParError(2);
-    Double_t a = fit->GetParameter(3);
-    Double_t b = fit->GetParameter(4);
-    Double_t c = fit->GetParameter(5);
-    Double_t d = fit->GetParameter(6);
+    Double_t A1 = fit->GetParameter(0);
+    Double_t mu1 = fit->GetParameter(1);
+    Double_t mu_err1 = fit->GetParError(1);
+    Double_t sigma1 = fit->GetParameter(2);
+    Double_t sigma_err1 = fit->GetParError(2);
+    Double_t A2 = fit->GetParameter(3);
+    Double_t mu2 = fit->GetParameter(4);
+    Double_t mu_err2 = fit->GetParError(4);
+    Double_t sigma2 = fit->GetParameter(5);
+    Double_t sigma_err2 = fit->GetParError(5);
+    Double_t A3 = fit->GetParameter(6);
+    Double_t mu3 = fit->GetParameter(7);
+    Double_t mu_err3 = fit->GetParError(7);
+    Double_t sigma3 = fit->GetParameter(8);
+    Double_t sigma_err3 = fit->GetParError(8);
+    Double_t a = fit->GetParameter(9);
+    Double_t b = fit->GetParameter(10);
+    Double_t c = fit->GetParameter(11);
+    Double_t d = fit->GetParameter(12);
     
     // Use parameters of fit to plot individual contributions
     int n_pts = 10000;
@@ -204,7 +227,7 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     for (int i = 0; i < n_pts; i++) {
         m[i] = mass_min + dm * i;
-        y_signal[i] = A*TMath::Gaus(m[i], mu, sigma);
+        y_signal[i] = A1*TMath::Gaus(m[i], mu1, sigma1) + A2*TMath::Gaus(m[i], mu2, sigma2) + A3*TMath::Gaus(m[i], mu3, sigma3);
         y_background[i] = a*m[i]*m[i]*m[i] + b*m[i]*m[i] + c*m[i] + d;
     }
     
@@ -230,27 +253,42 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     legend->AddEntry(background, "Background", "l");
     legend->Draw();
 
-    TLatex fitMean;
-    TLatex fitSigma;
+    TLatex fitMean1;
+    TLatex fitSigma1;
     // Set normalized device coordinates, makes (x,y) position
     // range between 0 and 1 instead of in the actual data's range
-    fitMean.SetNDC(); 
-    fitSigma.SetNDC(); 
-    fitMean.SetTextSize(0.03);
-    fitSigma.SetTextSize(0.03);
-    std::string mean_result = "#mu = " + floatToString(mu, 2) + " #pm " + floatToString(mu_err, 2) + " MeV";
-    std::string sigma_result = "#sigma = " + floatToString(sigma, 2) + " #pm " + floatToString(sigma_err, 2) + " MeV";
-    fitMean.DrawLatex(0.35, 0.35, mean_result.c_str()); 
-    fitMean.DrawLatex(0.35, 0.30, sigma_result.c_str()); 
+    fitMean1.SetNDC(); 
+    fitSigma1.SetNDC(); 
+    fitMean1.SetTextSize(0.03);
+    fitSigma1.SetTextSize(0.03);
+    std::string mean_result1 = "#mu_{1} = " + floatToString(mu1, 2) + " #pm " + floatToString(mu_err1, 2) + " MeV";
+    std::string sigma_result1 = "#sigma_{1} = " + floatToString(sigma1, 2) + " #pm " + floatToString(sigma_err2, 2) + " MeV";
+    fitMean1.DrawLatex(0.45, 0.45, mean_result1.c_str()); 
+    fitMean1.DrawLatex(0.45, 0.40, sigma_result1.c_str()); 
+
+    TLatex fitMean2;
+    TLatex fitSigma2;
+    fitMean2.SetNDC(); 
+    fitSigma2.SetNDC(); 
+    fitMean2.SetTextSize(0.03);
+    fitSigma2.SetTextSize(0.03);
+    std::string mean_result2 = "#mu_{2} = " + floatToString(mu2, 2) + " #pm " + floatToString(mu_err2, 2) + " MeV";
+    std::string sigma_result2 = "#sigma_{2} = " + floatToString(sigma2, 2) + " #pm " + floatToString(sigma_err2, 2) + " MeV";
+    fitMean2.DrawLatex(0.45, 0.35, mean_result2.c_str()); 
+    fitMean2.DrawLatex(0.45, 0.30, sigma_result2.c_str()); 
+
+    TLatex fitMean3;
+    TLatex fitSigma3;
+    fitMean3.SetNDC(); 
+    fitSigma3.SetNDC(); 
+    fitMean3.SetTextSize(0.03);
+    fitSigma3.SetTextSize(0.03);
+    std::string mean_result3 = "#mu_{3} = " + floatToString(mu3, 2) + " #pm " + floatToString(mu_err3, 2) + " MeV";
+    std::string sigma_result3 = "#sigma_{3} = " + floatToString(sigma3, 2) + " #pm " + floatToString(sigma_err3, 2) + " MeV";
+    fitMean3.DrawLatex(0.45, 0.25, mean_result3.c_str()); 
+    fitMean3.DrawLatex(0.45, 0.20, sigma_result3.c_str()); 
 
     canvas->SaveAs(mq->LER_filename.c_str());
-
-    delete hist;
-    delete fit;
-    delete background;
-    delete signal;
-    delete canvas;
-    delete legend;
 }
 
 void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
@@ -545,7 +583,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "DID1234.root";
+    std::string data = "twoTraces.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -597,8 +635,8 @@ void MakeHists() {
     //MakeInvMassHist(&tq, PVTree, 300);
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
-    //LowEnergyResonanceFit(&tq, PVTree, 75);
-    HighEnergyResonanceFit(&hq, PVTree, 1000);
+    LowEnergyResonanceFit(&tq, PVTree, 65);
+    //HighEnergyResonanceFit(&tq, PVTree, 1000);
 
     //MakeInvMassHist(&hq, PVTree, 80);
     
