@@ -1,0 +1,104 @@
+\documentclass{article}
+
+% Packages for formatting
+\usepackage[margin=1in]{geometry}
+\usepackage{fancyhdr}
+\usepackage{amssymb}
+\usepackage[most]{tcolorbox}
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{cite}
+
+
+\newtcblisting{mycode}{%
+    boxrule=0.5pt,
+    colback=white,
+    listing only,
+    listing options={basicstyle=\ttfamily, numbers=left},
+}
+\lstset{basicstyle=\ttfamily}
+\pagestyle{fancy}
+\lhead{Simon Lavoie}
+\chead{}
+\rhead{August 18, 2024}
+\lfoot{}
+\cfoot{}
+\rfoot{}
+\renewcommand{\headrulewidth}{1pt}
+
+\date{October 12, 2023} % Leave this blank to remove the date from the title
+
+\begin{document}
+
+
+\large
+\begin{center}
+\section*{The Search for Multiquark States at the Large Hardon Collider}
+\end{center}
+\normalsize 
+
+
+
+
+\section*{Abstract}
+Baryonic matter, of which we are primarily composed of, is itself composed of three quarks.
+These baryons include the proton and neutron, which we know as the core constituents of the 
+nucleus. There also exists the traditional mesons, which are composed of only two quarks. This begs the question:
+do particles composed of groups larger than a trio of quarks exist? The short answer is yes, 
+with the first observation of a tetraquark - a particle composed of four quarks - being made 
+in 2003 by the Belle Collaboration \cite{MultiquarkDiscovery}.
+In this paper, the search for possible multiquark states using strange particles, namely, the 
+$K^0_s$ meson and the $\Lambda^0$ baryon is done using data collected by the ATLAS detector 
+of proton-proton collisions at a center-of-mass energy of $\sqrt{s} =$ \SI{13.6}{TeV}. Minimum
+bias data from 2015 boasting an integrated luminosity of \SI{21.559}{nb}$^{-1}$ is used. Secondary 
+vertices are marked as either a $K^0_s$ or $\Lambda^0$ using strict cuts and their invariant mass and 
+lifetimes are fitted for verification. A low energy resonant state of the $K^0_sK^0_s$ invariant 
+mass distribution was detected at 1524.40 $\pm$ 4.83 MeV which likely corresponds to the 
+$f_2'(1525)$ state. With this known signal identified, a bump hunt is performed on the higher-energy
+range of the $K^0_sK^0_s$, $K^0_s\Lambda^0$ and $\Lambda^0\Lambda^0$ invariant mass spectra
+in search for possible tetraquark, pentaquark and hexaquark states. DID I FIND ANYTHING?
+
+\section{Introduction}
+From the discovery of various exotic particles such as pions in the 50's to that of the Higgs
+boson in 2012, the advent of particle accelerators brought about new discoveries in particle physics,
+bolstering our grasp on the standard model - a guage theory which describes three out of the four
+fundamental forces, that being the weak, strong, and electromagnetic forces \cite{KLDiscovery}, \cite{HiggsDiscovery}. 
+As the collision energies of particle accelerators steadily increase, new discoveries of higher mass particles 
+can be made. 
+Multiquarks are an example of these higher mass particles, being made up of collections of quarks
+whose number exceeds that of the usual two or three we observe in mesons and baryons respectively.
+Such particles are not forbidden by the standard model, and a proper identification of multiquark 
+states may help in our understanding of quantum chromodynamics (QCD) - a core component of the standard 
+model which describes the interactions between quarks and the elementary particle which mediates 
+the strong interaction between them: the gluon. Thus, this work searches for multiquark states 
+through the possible decay products of tetraquarks, pentaquarks and hexaquarks. The decay channels
+are as follows:
+
+\begin{align*}
+\text{Tetraquark}: X &\rightarrow K^0_sK^0_s \\
+\text{Pentaquark}: Y &\rightarrow K^0_s\Lambda^0 \\
+\text{Hexaquark}:  Z &\rightarrow \Lambda^0\Lambda^0
+\end{align*}
+
+Where the $K^0_s$ meson is a neutral kaon composed of a down quark $(d)$ and an anti-strange quark 
+$(\bar{s})$, and the $\Lambda^0$, known as the Lambda baryon, is composed of an up, down and strange 
+quark $(uds)$. Quarks are known to possess one of the three fundamental color charges, of which there 
+are three: Red, Green or Blue. According to the color confinement principle, a core tenet of QCD,
+color-charged particles such as quarks cannot be isolated, and thus quarks combine to form color-neutral 
+hadrons called singlet states. Nothing forbids the creation of a singlet state composed of two 
+quarks and two antiquarks $(qq\bar{q}\bar{q})$, a particle called a tetraquark which would extend 
+the definition of a traditional meson from a single quark-antiquark pair to any particle composed 
+in equal parts of quarks and antiquarks. Similarly, nothing forbids the combination of a color-neutral 
+baryon and a quark-antiquark pair $(qqqq\bar{q})$ which we would call a pentaquark. A combination of 
+two baryons or three quark-antiquark pairs could also exist $(q^6 \text{ or } q^3\bar{q}^{3})$, 
+which are both example of hexaquarks.
+
+\subsection{Event Reconstruction}
+The $K^0_s$ and $\Lambda^0$ are chosen as objects of study due to their decay products being easily 
+identifiable within the ATLAS detector. The $K^0_s$ is known to decay into two charged pions $(\pi^+\pi^-)$
+with a branching ratio of $69.20 \pm 0.05$ \unit{\%} \cite{KBranchingRatio} 
+
+\bibliographystyle{plain}  
+\bibliography{bibliography} 
+
+\end{document}
