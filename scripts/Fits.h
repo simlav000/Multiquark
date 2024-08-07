@@ -27,8 +27,8 @@ namespace Fits {
     }
     
     
-    inline Double_t LMassFitBreitWigner(Double_t *x, Double_t *par) { // Lambda Fit: BreitWigner + Exponential + const
-        return par[0]*TMath::BreitWigner(x[0],par[1],par[2]) + par[3]*TMath::Exp(par[4]*x[0]) + par[5];
+    inline Double_t LMassFitBreitWigner(Double_t *x, Double_t *par) { // Lambda Fit: BreitWigner + quadratic
+        return par[0]*TMath::BreitWigner(x[0],par[1],par[2]) + par[3]*x[0]*x[0] + par[4]*x[0] + par[5];
     }
     
     
