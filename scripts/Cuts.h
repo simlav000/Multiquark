@@ -104,17 +104,17 @@ namespace Cuts {
     inline void SetCutNames() {
         no_cut.SetName("No cuts");
     
-        cut_on_KcosTheta_3D.SetName(("Cos(#theta) > " + floatToString(KcosTheta_3D_low, 3)).c_str());
-        cut_on_LcosTheta_3D.SetName(("Cos(#theta) > " + floatToString(LcosTheta_3D_low, 3)).c_str());
+        cut_on_KcosTheta_3D.SetName(("Cos(#theta) > " + floatToString(KcosTheta_3D_low, 4)).c_str());
+        cut_on_LcosTheta_3D.SetName(("Cos(#theta) > " + floatToString(LcosTheta_3D_low, 4)).c_str());
     
         K_candidate_cuts.SetName("All cuts");
         L_LB_candidate_cuts.SetName("All cuts");
     
-        KCut2.SetName(("p_T > " + floatToString(KpT_low, 2) + " MeV").c_str());
-        LCut2.SetName(("p_T > " + floatToString(LpT_low, 2) + " MeV").c_str());
+        KCut2.SetName(("p_{T} > " + floatToString(KpT_low, 2) + " MeV").c_str());
+        LCut2.SetName(("p_{T} > " + floatToString(LpT_low, 2) + " MeV").c_str());
     
-        KCut3.SetName((floatToString(KDeltaRxy_low, 2) + " mm < R > " + floatToString(KDeltaRxy_high, 2) + " mm").c_str());
-        LCut3.SetName((floatToString(LDeltaRxy_low, 2) + " mm < R > " + floatToString(LDeltaRxy_high, 2) + " mm").c_str());
+        KCut3.SetName(("R > " + floatToString(KDeltaRxy_low, 2) + " mm").c_str());
+        LCut3.SetName(("R > " + floatToString(LDeltaRxy_low, 2) + " mm").c_str());
     
     }
 }
