@@ -8,6 +8,8 @@
 \usepackage{listings}
 \usepackage{siunitx}
 \usepackage{cite}
+\usepackage{wrapfig}
+\usepackage{hyperref}
 
 
 \newtcblisting{mycode}{%
@@ -56,7 +58,7 @@ lifetimes are fitted for verification. A low energy resonant state of the $K^0_s
 mass distribution was detected at 1524.40 $\pm$ 4.83 MeV which likely corresponds to the 
 $f_2'(1525)$ state. With this known signal identified, a bump hunt is performed on the higher-energy
 range of the $K^0_sK^0_s$, $K^0_s\Lambda^0$ and $\Lambda^0\Lambda^0$ invariant mass spectra
-in search for possible tetraquark, pentaquark and hexaquark states. DID I FIND ANYTHING?
+in search for possible tetraquark, pentaquark and hexaquark states. WILL I FIND ANYTHING?
 
 \section{Introduction}
 From the discovery of various exotic particles such as pions in the 50's to that of the Higgs
@@ -75,30 +77,96 @@ through the possible decay products of tetraquarks, pentaquarks and hexaquarks. 
 are as follows:
 
 \begin{align*}
-\text{Tetraquark}: X &\rightarrow K^0_sK^0_s \\
-\text{Pentaquark}: Y &\rightarrow K^0_s\Lambda^0 \\
-\text{Hexaquark}:  Z &\rightarrow \Lambda^0\Lambda^0
+\text{Tetraquark}: A &\rightarrow K^0_sK^0_s \\
+\text{Pentaquark}: B &\rightarrow K^0_s\Lambda^0 \\
+\text{Hexaquark}:  C &\rightarrow \Lambda^0\Lambda^0
 \end{align*}
 
-Where the $K^0_s$ meson is a neutral kaon composed of a down quark $(d)$ and an anti-strange quark 
-$(\bar{s})$, and the $\Lambda^0$, known as the Lambda baryon, is composed of an up, down and strange 
-quark $(uds)$. Quarks are known to possess one of the three fundamental color charges, of which there 
-are three: Red, Green or Blue. According to the color confinement principle, a core tenet of QCD,
-color-charged particles such as quarks cannot be isolated, and thus quarks combine to form color-neutral 
-hadrons called singlet states. Nothing forbids the creation of a singlet state composed of two 
-quarks and two antiquarks $(qq\bar{q}\bar{q})$, a particle called a tetraquark which would extend 
-the definition of a traditional meson from a single quark-antiquark pair to any particle composed 
-in equal parts of quarks and antiquarks. Similarly, nothing forbids the combination of a color-neutral 
-baryon and a quark-antiquark pair $(qqqq\bar{q})$ which we would call a pentaquark. A combination of 
-two baryons or three quark-antiquark pairs could also exist $(q^6 \text{ or } q^3\bar{q}^{3})$, 
-which are both example of hexaquarks.
+Where the $K^0_s$ meson is a neutral kaon composed of a down quark $(d)$ and an
+anti-strange quark $(\bar{s})$, and the $\Lambda^0$, known as the Lambda baryon,
+is composed of an up, down and strange quark $(uds)$. Quarks are known to
+possess one of the three fundamental color charges, of which there are three:
+Red, Green or Blue. According to the color confinement principle, a core tenet
+of QCD, color-charged particles such as quarks cannot be isolated, and thus
+quarks combine to form color-neutral hadrons called singlet states. Nothing
+forbids the creation of a singlet state composed of two quarks and two
+antiquarks $(qq\bar{q}\bar{q})$, a particle called a tetraquark which would be
+categorized as an exotic meson since, despite not being composed of a single
+quark-antiquark pair, it nonetheless possesses a meson's characteristic trait of
+being a hadron with a baryon number of zero. Similarly, nothing forbids the
+combination of a color-neutral baryon and a quark-antiquark pair $(qqqq\bar{q})$
+which we would call a pentaquark. A combination of two baryons or three
+quark-antiquark pairs could also exist $(q^6 \text{ or } q^3\bar{q}^{3})$, which
+are both example of hexaquarks.
 
 \subsection{Event Reconstruction}
-The $K^0_s$ and $\Lambda^0$ are chosen as objects of study due to their decay products being easily 
-identifiable within the ATLAS detector. The $K^0_s$ is known to decay into two charged pions $(\pi^+\pi^-)$
-with a branching ratio of $69.20 \pm 0.05$ \unit{\%} \cite{KBranchingRatio} 
+The $K^0_s$ and $\Lambda^0$ are chosen as objects of study due to their decay
+products being easily identifiable within the ATLAS (A Torroidal LHC Apparatus) 
+detector. The $K^0_s$ is
+known to decay into two charged pions $(\pi^+\pi^-)$ with a branching ratio of
+$69.20 \pm 0.05 \unit{\%}$ \cite{KBranchingRatio} and the $\Lambda^0$ decays
+into into a proton and a pion $(p^+\pi^-)$ with a branching ratio of $63.9 \pm
+0.5 \unit{\%}$ \cite{LBranchingRatio}. These charged particles are traced back to 
+a secondary vertex (denoted $V0$) and the $K^0_s$ or $\Lambda^0$ invariant mass is reconstructed using the
+respective decay product's energies and momenta.
+The invariant mass of this two-particle 
+decay (in nautral units) is given by:
+\begin{equation}
+M = \sqrt{(E_1 + E_2)^2 - ||p_1 + p_2||^2}.\label{equation: invmass} 
+\end{equation}
+Once two secondary vertices are reconstructed within a single event, the process 
+can be repeated to reconstruct the invariant mass of the primary vertex, which is the point 
+of the $p-p$ collision, once again using 
+equation \ref{equation: invmass}. The resulting primary vertex invariant mass distribution can then be 
+searched for possible multiquark states.
+Before this can be done, however, cuts must be placed on the reconstructed $V0$s
+to reduce the background and ensure no misidentification of particles occur.
+\begin{figure}[!h]
+\includegraphics*[width=\textwidth]{Figs/AllThree.png} 
+\caption{Tetraquark, pentaquark and hexaquark decay chains, respectively.}
+\end{figure}
+
+\section{Methods}
+Each $V0$ is considered a potential $K^0_s$ and $\Lambda^0$ candidate and is subject 
+to a series of cuts in order to properly categorize the secondary vertex. This is because 
+the ATLAS detector obtains only data on the momentum and charge of the pions and protons.
+The trouble lies in differentiating the $p^+$ from $\pi^+$, as the  $\pi^-$ are easily 
+identifiable. In order to accomplish this, the invariant mass of each secondary vertex 
+is computed twice: once with the proton mass, and another with the pion mass. The cuts are 
+then used to determine which hypothesis was correct, as well as reduce the overall background.
+The cuts are as follows:\\
+\vspace{-20pt}
+\begin{wrapfigure}[16]{l}{0.40\textwidth}
+  \includegraphics[width=0.39\textwidth]{Figs/KinematicVariables.png}
+  \caption{\small Kinematic variables of a $K^0_s \rightarrow \pi^+\pi^-$ decay process.}\label{figure: KinematicVariables}
+\end{wrapfigure}
+
+\begin{itemize}
+    \item Cut on transverse momentum: $p_T$
+    \item Cut on pointing angle: $\cos(\theta)$ 
+    \item Cut on distance travelled: $d$
+    \item Cut on invariant mass: $m_{\pi^+\pi^-}$
+    \item Cut on invariant mass: $m_{p^+\pi^-}$
+\end{itemize}
+
+With $p_T$ and $\cos(\theta)$ being given by:
+\begin{equation}
+    p_T = \sqrt{p_x^2 + p_y^2}
+\end{equation}
+\begin{equation}
+    \cos(\theta) = \frac{\Delta x p_x + \Delta y p_y}{p_Td}
+\end{equation}
+Where $\Delta x$ and $\Delta y$ are the differences in $x$ and $y$ coordinates between the primary 
+and secondary vertices and the equation for $\cos(\theta)$ comes from the dot product between the 
+vectors $\vec{R}$ (the path vector whose magnitude is $d$) and $\vec{p}$, the reconstructed momentum, 
+as per figure \ref{figure: KinematicVariables}.
+%Should I go into detail about what minimum bias is (requires background on
+%luminosity)\\ %Should I go into detail about the coordinate system\\ %How about
+%talking about the ATLAS detector in general\\
+
 
 \bibliographystyle{plain}  
 \bibliography{bibliography} 
 
 \end{document}
+
