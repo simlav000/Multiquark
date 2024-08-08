@@ -86,12 +86,12 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     hist_canvas->SaveAs((mq->HER_filename + std::to_string(num_bins)  + "Bins.png").c_str());
 
 
-    TCanvas *residuals_canvas = new TCanvas("Significance plot", "Histogram Canvas", 1000, 500);
-    TH1F *residuals = new TH1F("hist", "Significance", num_bins, mass_min, mass_max);
+    TCanvas *significance_canvas = new TCanvas("Significance plot", "Histogram Canvas", 1000, 500);
+    TH1F *significance = new TH1F("hist", "Significance", num_bins, mass_min, mass_max);
 
-    residuals->SetLineColor(kBlack);
-    residuals->GetXaxis()->SetTitle(mq->invariant_mass_label);
-    residuals->GetYaxis()->SetTitle("Counts per bin");
+    significance->SetLineColor(kBlack);
+    significance->GetXaxis()->SetTitle(mq->invariant_mass_label);
+    significance->GetYaxis()->SetTitle("Signal Significance (#sigma)");
 
 
 
@@ -126,14 +126,40 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
         double fit_value = bkg_fit->Eval(hist->GetBinCenter(i));       
 
         double residual = bin_value - fit_value;
-        double significance = residual / bin_error;
-        residuals->SetBinContent(i, significance);
+        double significance_value = residual / bin_error;
+        significance->SetBinContent(i, significance_value);
     }
 
-    residuals->Draw();
+    significance->Draw();
     
-    std::string fname = mq->HER_filename + "Significance" + std::to_string(num_bins) + "Bins.png";
-    residuals_canvas->SaveAs(fname.c_str());
+    std::string sig_fname = mq->HER_filename + "Significance" + std::to_string(num_bins) + "Bins.png";
+    significance_canvas->SaveAs(sig_fname.c_str());
+
+    // Plotting significance projection onto y-axis as a histogram to see how 
+    // significance is distributed
+    TCanvas *projection_canvas = new TCanvas("hist_canvas", "Histogram Canvas", 1000, 500);
+    std::string projection_hist_title = mq->name_formatted + " Significance Distribution";
+
+    // This is the only thing stopping me from building this histogram in the previous loop :(
+    Double_t sig_min = significance->GetMinimum();
+    Double_t sig_max = significance->GetMaximum();
+    Double_t sig_nbins = TMath::Ceil(TMath::Log2(significance->GetNbinsX()) + 1); // Sturge's formula
+
+    TH1F *projection_hist = new TH1F("hist", projection_hist_title.c_str(), sig_nbins, sig_min, sig_max);
+
+    for (int i = 0; i < significance->GetNbinsX(); i++) {
+        double significance_value = significance->GetBinContent(i);
+        projection_hist->Fill(significance_value);
+    }
+
+    projection_hist->GetXaxis()->SetName("Significance (#sigma)");
+    projection_hist->GetYaxis()->SetName("Bin count");
+
+    gStyle->SetOptStat("mre"); // m: mean, r: rms, e: num entries
+    projection_hist->Draw();
+
+    std::string proj_fname = mq->HER_filename + "SigDistribution" + std::to_string(num_bins) + "Bins.png";
+    projection_canvas->SaveAs(proj_fname.c_str());
 }
 
 void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
@@ -697,7 +723,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "datasetMediumV0s.root";
+    std::string data = "DID1LifeTimeCutPVOnly.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -751,10 +777,10 @@ void MakeHists() {
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 109);
-    //HighEnergyResonanceFit(&tq, PVTree, 1000);
+    HighEnergyResonanceFit(&tq, PVTree, 25);
 
     //MakeInvMassHist(&tq, PVTree, 80);
-    MakeDistanceCutHist(&l, V0Tree);
+    //MakeDistanceCutHist(&l, V0Tree);
     //MakePtCutHist(&l, V0Tree);
 }
 
