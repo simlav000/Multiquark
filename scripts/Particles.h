@@ -25,7 +25,7 @@ public:
     Double_t (*mass_fit_model)(Double_t*, Double_t*);
     Double_t (*life_fit_model)(Double_t*, Double_t*);
 
-    std::string invariant_mass_label;
+    const char* invariant_mass_label;
 
 protected:
     Particle(std::string n) : name(n) {}
