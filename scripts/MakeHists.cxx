@@ -40,7 +40,7 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     gStyle->SetOptStat("e"); 
 
     hist->SetLineColor(kBlack);
-    hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
+    hist->GetXaxis()->SetTitle(mq->invariant_mass_label);
     hist->GetYaxis()->SetTitle("Counts per bin");
     
     PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
@@ -90,7 +90,7 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     TH1F *residuals = new TH1F("hist", "Significance", num_bins, mass_min, mass_max);
 
     residuals->SetLineColor(kBlack);
-    residuals->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
+    residuals->GetXaxis()->SetTitle(mq->invariant_mass_label);
     residuals->GetYaxis()->SetTitle("Counts per bin");
 
 
@@ -155,7 +155,7 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     hist->SetFillColor(mq->fill_color);
     hist->SetLineColor(kBlack);
-    hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
+    hist->GetXaxis()->SetTitle(mq->invariant_mass_label);
     hist->GetYaxis()->SetTitle("Counts per bin");
 
     PVTree->Draw(FillHist(mq->mass, "hist").c_str(), mq->default_cut, "hist");
@@ -312,7 +312,7 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
 
     hist->SetFillColor(mq->fill_color);
     hist->SetLineColor(kBlack);
-    hist->GetXaxis()->SetTitle((mq->invariant_mass_label).c_str());
+    hist->GetXaxis()->SetTitle(mq->invariant_mass_label);
     hist->GetYaxis()->SetTitle("Counts per bin");
     
     canvas->SaveAs(mq->output_filename.c_str());
@@ -336,7 +336,7 @@ void MakeKLMassHist(TTree* V0Tree) {
 
     TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", num_bins_x, x_low, x_high, num_bins_y, y_low, y_high);
 
-    gStyle->SetPalette(kRainBow); //kMint
+    gStyle->SetPalette(kRainBow); // https://root.cern.ch/doc/master/classTColor.html
     hist->SetStats(false);
 
     // Fill the histogram with data from the TTree
@@ -368,72 +368,81 @@ void SimpleHistogram(TTree* V0Tree) {
     canvas->SaveAs("Simple.png");
 }
 
-void MakeDistanceCutHist(TTree* V0Tree) {
-    int num_bins_x = 100;
-    int num_bins_y = 100;
-
-    int x_low = 1080;
-    int x_high = 1200;
+void MakeDistanceCutHist(Particle* p,  TTree* V0Tree) {
+    int x_low = p->mass_min;
+    int x_high = p->mass_max;
 
     int y_low = 0;
-    int y_high = 100;
+    int y_high = 30;
+
+    int num_bins_x = 100;
+    int num_bins_y = 100;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
     canvas->SetRightMargin(0.15);
 
-    TH2F *hist = new TH2F("hist_KLMass", "#Lambda^{0} Invariant Mass vs Distance", num_bins_x, x_low, x_high, num_bins_y, y_low, y_high);
+    std::string plot_title = "Distance versus " + p->name_formatted + " Invariant Mass";
+    TH2F *hist = new TH2F("dVsInvMass", plot_title.c_str(), 
+                          num_bins_x, x_low, x_high,
+                          num_bins_y, y_low, y_high);
 
-    gStyle->SetPalette(kRainBow); //kMint
+    gStyle->SetPalette(kRainBow); // https://root.cern.ch/doc/master/classTColor.html
     hist->SetStats(false);
 
     // Fill the histogram with data from the TTree
-    V0Tree->Draw("DeltaR:LMass >> hist_KLMass", Cuts::cut_on_KcosTheta_3D); 
+    std::string fill_keys = "DeltaR:" + p->mass;
+    V0Tree->Draw(FillHist(fill_keys, "dVsInvMass").c_str(), Cuts::cut_on_KcosTheta_3D);  // y:x -> y vs x
 
     // Set axis titles
-    hist->GetXaxis()->SetTitle("m_{#p^{+}#pi^{-}} [MeV]");
+    hist->GetXaxis()->SetTitle(p->invariant_mass_label);
     hist->GetYaxis()->SetTitle("Distance from Primary Vertex [mm]");
 
     // Draw the histogram with a color map
     hist->Draw("COLZ");
 
     // Save the canvas as a PNG file
-    canvas->SaveAs("LDistancePlot.png");
+    std::string fname = p->name + "_d_vs_InvMAss.png";
+    canvas->SaveAs(fname.c_str());
 
     // Clean up
     delete hist;
     delete canvas;
 }
 
-void MakePtCutHist(TTree* V0Tree) {
-    int num_bins_x = 100;
-    int num_bins_y = 100;
-
-    int x_low = 400;
-    int x_high = 600;
+void MakePtCutHist(Particle* p, TTree* V0Tree) {
+    int x_low = p->mass_min; // 300 
+    int x_high = p->mass_max; // 650
 
     int y_low = 0;
     int y_high = 3000;
 
+    int num_bins_x = 100;
+    int num_bins_y = 100;
+
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
     canvas->SetRightMargin(0.15);
+    
+    std::string plot_title = "p_{T} vs " + p->name_formatted + " Invariant Mass";
+    TH2F *hist = new TH2F("pTMassHist", plot_title.c_str(),
+                          num_bins_x, x_low, x_high, 
+                          num_bins_y, y_low, y_high);
 
-    TH2F *hist = new TH2F("hist_KLMass", "K^{0}_{s} Invariant Mass vs p_{T}", num_bins_x, x_low, x_high, num_bins_y, y_low, y_high);
-
-    gStyle->SetPalette(kRainBow); //kMint
+    gStyle->SetPalette(kRainBow); // https://root.cern.ch/doc/master/classTColor.html
     hist->SetStats(false);
 
-    // Fill the histogram with data from the TTree
-    V0Tree->Draw("p_T:KMass >> hist_KLMass", Cuts::cut_on_LcosTheta_3D); 
+    std::string fill_keys = "p_T:" + p->mass;
+    V0Tree->Draw(FillHist(fill_keys, "pTMassHist").c_str(), Cuts::cut_on_KcosTheta_3D);  // y:x -> y vs x
 
     // Set axis titles
-    hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
+    hist->GetXaxis()->SetTitle(p->invariant_mass_label);
     hist->GetYaxis()->SetTitle("p_{T} [MeV]");
 
     // Draw the histogram with a color map
     hist->Draw("COLZ");
 
     // Save the canvas as a PNG file
-    canvas->SaveAs("LpTCut.png");
+    std::string fname = p->name + "_pT_vs_InvMass.png";
+    canvas->SaveAs(fname.c_str());
 
     // Clean up
     delete hist;
@@ -458,7 +467,7 @@ void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2
 
     hist1->SetFillColor(kViolet + 6);
     hist1->SetLineColor(kBlack);
-    hist1->GetXaxis()->SetTitle((p->invariant_mass_label).c_str());
+    hist1->GetXaxis()->SetTitle(p->invariant_mass_label);
     hist1->GetYaxis()->SetTitle("Counts per bin");
     hist1->SetMinimum(0);   // Needed to see signal after cuts
     hist1->SetStats(false); // Get rid of stats box
@@ -688,7 +697,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "wtf.root";
+    std::string data = "datasetMediumV0s.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -741,13 +750,12 @@ void MakeHists() {
     //MakeInvMassHist(&hq, PVTree, 300);
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
-    LowEnergyResonanceFit(&tq, PVTree, 109);
+    //LowEnergyResonanceFit(&tq, PVTree, 109);
     //HighEnergyResonanceFit(&tq, PVTree, 1000);
 
     //MakeInvMassHist(&tq, PVTree, 80);
-    //SimpleHistogram(V0Tree);
-    //MakeDistanceCutHist(V0Tree);
-    //MakePtCutHist(V0Tree);
+    MakeDistanceCutHist(&l, V0Tree);
+    //MakePtCutHist(&l, V0Tree);
 }
 
 
