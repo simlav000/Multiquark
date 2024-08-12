@@ -612,56 +612,77 @@ void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2
     delete canvas;
 }
 
-void MakeKLifeHist(TTree* V0Tree) {
+void test(Particle* p, TTree* V0Tree) {
 
-    float t_min = 0.025e-9;
-    float t_max = 0.22e-9;
+    float t_min = p->life_min;
+    float t_max = p->life_max;
     int num_bins = 100;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
-    TH1F* hist = new TH1F("hist_KLife", "K^{0}_{s} Lifetime", num_bins, t_min, t_max);
+    TH1F* hist = new TH1F("hist_Lifetime", "K^{0}_{s} Lifetime", num_bins, t_min, t_max);
     hist->GetXaxis()->SetTitle("Time [s]"); 
     hist->GetYaxis()->SetTitle("Counts per bin");
     hist->SetMinimum(0);
     hist->SetStats(false);
 
-    V0Tree->Draw("KLife>>hist_KLife", "", "hist"); 
+    std::string fill_command = p->life + ">>hist_Lifetime";
+    V0Tree->Draw(FillHist(p->life, "hist_Lifetime").c_str(), "", "hist"); 
+    std::string output_fname = p->name + "Lifetime.png";
+    canvas->SaveAs(output_fname.c_str());
+}
+
+void MakeLifetimeHist(Particle* p, TTree* V0Tree) {
+
+    float t_min = p->life_min;
+    float t_max = p->life_max;
+    int num_bins = 200;
+
+    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
+
+    TH1F* hist = new TH1F("hist_Lifetime", "K^{0}_{s} Lifetime", num_bins, t_min, t_max);
+    hist->GetXaxis()->SetTitle("Time [s]"); 
+    hist->GetYaxis()->SetTitle("Counts per bin");
+    hist->SetMinimum(0);
+    hist->SetStats(true);
+
+    V0Tree->Draw(FillHist(p->life, "hist_Lifetime").c_str(), "", "hist"); 
 
     // Format: TF1("name", fit_func, lowlim, highlim, nparams)
-    TF1 *KLifeFit = new TF1("KLifeFit", Fits::lifetime_fit_2exp, t_min, t_max, 5);
+    TF1 *LifetimeFit = new TF1("LifetimeFit", Fits::lifetime_fit_2exp, t_min, t_max, 5);
 
     // Set Parameter Names
-    KLifeFit->SetParName(0, "C_0");  // Constant offset
-    KLifeFit->SetParName(1, "C_b");  // Background amplitude
-    KLifeFit->SetParName(2, "t_b");  // Background lifetime
-    KLifeFit->SetParName(3, "C_K");  // Kaon amplitude
-    KLifeFit->SetParName(4, "t_K");  // Kaon lifetime
+    LifetimeFit->SetParName(0, "C_0");  // Constant offset
+    LifetimeFit->SetParName(1, "C_b");  // Background amplitude
+    LifetimeFit->SetParName(2, "t_b");  // Background lifetime
+    LifetimeFit->SetParName(3, "C_s");  // Signal amplitude
+    LifetimeFit->SetParName(4, "t_s");  // Signal lifetime
 
     // Initial guesses
-    KLifeFit->SetParameter(0, 16382);     // C_0
-    KLifeFit->SetParameter(2, 2.5e-10);   // background lifetime PDG
-    KLifeFit->SetParameter(4, 8.965e-11); // Kshort lifetime PDG
+    //LifetimeFit->SetParameter(0, 16382);       // C_0
+    //LifetimeFit->SetParameter(2, 2.5e-10);     // background lifetime PDG
+    LifetimeFit->SetParameter(4, p->life_pdg); // Kshort lifetime PDG
 
     // Limits on search
-    KLifeFit->SetParLimits(1, 0, 1e+10);     // C_b > 0
-    KLifeFit->SetParLimits(2, 1e-10, 1e-08); // t_b
-    KLifeFit->SetParLimits(3, 0, 1e+10);     // C_K > 0
-    KLifeFit->SetParLimits(4, 7e-11, 1e-10); // t_s 
+    LifetimeFit->SetParLimits(0, 0, 1e+10);     // C_0 > 0
+    LifetimeFit->SetParLimits(1, 0, 1e+10);     // C_b > 0
+    LifetimeFit->SetParLimits(2, 1e-10, 1e-08); // t_b
+    LifetimeFit->SetParLimits(3, 0, 1e+10);     // C_s > 0
+    LifetimeFit->SetParLimits(4, 7e-11, 1e-10); // t_s 
 
-    KLifeFit->SetLineColor(kBlue);
-    KLifeFit->SetLineWidth(2);
+    LifetimeFit->SetLineColor(kBlue);
+    LifetimeFit->SetLineWidth(2);
 
 
-    hist->Fit("KLifeFit", "R");
+    hist->Fit("LifetimeFit", "R");
 
-    KLifeFit->Draw("SAME");
+    LifetimeFit->Draw("SAME");
 
-    double c_0 = KLifeFit->GetParameter(0);
-    double c_b = KLifeFit->GetParameter(1);
-    double t_b = KLifeFit->GetParameter(2);
-    double c_k = KLifeFit->GetParameter(3);
-    double t_k = KLifeFit->GetParameter(4);
+    double c_0 = LifetimeFit->GetParameter(0);
+    double c_b = LifetimeFit->GetParameter(1);
+    double t_b = LifetimeFit->GetParameter(2);
+    double c_k = LifetimeFit->GetParameter(3);
+    double t_k = LifetimeFit->GetParameter(4);
 
     // Use parameters of fit to plot individual contributions
     int n_pts = 1000;
@@ -688,7 +709,7 @@ void MakeKLifeHist(TTree* V0Tree) {
         
     TLegend* legend = new TLegend(0.7, 0.7, 0.9, 0.9);
     legend->AddEntry(hist, "Data", "f"); // f = fill 
-    legend->AddEntry(KLifeFit, "Signal + Background", "l"); // l = line
+    legend->AddEntry(LifetimeFit, "Signal + Background", "l"); // l = line
     legend->AddEntry(background, "Background" , "l");
     legend->AddEntry(signal, "Signal", "l");
     legend->Draw();
@@ -710,13 +731,9 @@ void MakeKLifeHist(TTree* V0Tree) {
     //gPad->SetLogy();
     //canvas->Update();
 
-    canvas->SaveAs("KLife.png");
+    std::string output_fname = p->name + "Lifetime.png";
+    canvas->SaveAs(output_fname.c_str());
     
-    delete legend;
-    delete KLifeFit;
-    delete canvas;
-    delete hist;
-
 }
 
 void MakeHists() {
@@ -771,7 +788,8 @@ void MakeHists() {
     //MakeMassHist(&l, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
 
     //MakeKLMassHist(V0Tree);
-    //MakeKLifeHist(V0Tree);
+    MakeLifetimeHist(&k, V0Tree);
+    //test(&k, V0Tree);
     
     //MakeInvMassHist(&hq, PVTree, 300);
     //MakeInvMassHist(&pq, PVTree, 300);
