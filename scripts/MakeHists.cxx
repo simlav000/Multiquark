@@ -399,7 +399,7 @@ void MakeDistanceCutHist(Particle* p,  TTree* V0Tree) {
     int x_high = p->mass_max;
 
     int y_low = 0;
-    int y_high = 30;
+    int y_high = 100;
 
     int num_bins_x = 100;
     int num_bins_y = 100;
@@ -427,7 +427,7 @@ void MakeDistanceCutHist(Particle* p,  TTree* V0Tree) {
     hist->Draw("COLZ");
 
     // Save the canvas as a PNG file
-    std::string fname = p->name + "_d_vs_InvMAss.png";
+    std::string fname = p->name + "_d_vs_InvMass.png";
     canvas->SaveAs(fname.c_str());
 
     // Clean up
@@ -723,7 +723,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "DID1LifeTimeCutPVOnly.root";
+    std::string data = "datasetMediumV0s.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -777,10 +777,10 @@ void MakeHists() {
     //MakeInvMassHist(&pq, PVTree, 300);
     //MakeInvMassHist(&hq, PVTree, 200);
     //LowEnergyResonanceFit(&tq, PVTree, 109);
-    HighEnergyResonanceFit(&tq, PVTree, 25);
+    //HighEnergyResonanceFit(&tq, PVTree, 25);
 
     //MakeInvMassHist(&tq, PVTree, 80);
-    //MakeDistanceCutHist(&l, V0Tree);
+    MakeDistanceCutHist(&l, V0Tree);
     //MakePtCutHist(&l, V0Tree);
 }
 
