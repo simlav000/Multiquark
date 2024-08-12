@@ -612,39 +612,19 @@ void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2
     delete canvas;
 }
 
-void test(Particle* p, TTree* V0Tree) {
+void MakeLifetimeHist(Particle* p, TTree* V0Tree, int num_bins) {
 
     float t_min = p->life_min;
     float t_max = p->life_max;
-    int num_bins = 100;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
-    TH1F* hist = new TH1F("hist_Lifetime", "K^{0}_{s} Lifetime", num_bins, t_min, t_max);
+    std::string hist_title = p->name_formatted + " Lifetime";
+    TH1F* hist = new TH1F("hist_Lifetime", hist_title.c_str(), num_bins, t_min, t_max);
     hist->GetXaxis()->SetTitle("Time [s]"); 
     hist->GetYaxis()->SetTitle("Counts per bin");
     hist->SetMinimum(0);
     hist->SetStats(false);
-
-    std::string fill_command = p->life + ">>hist_Lifetime";
-    V0Tree->Draw(FillHist(p->life, "hist_Lifetime").c_str(), "", "hist"); 
-    std::string output_fname = p->name + "Lifetime.png";
-    canvas->SaveAs(output_fname.c_str());
-}
-
-void MakeLifetimeHist(Particle* p, TTree* V0Tree) {
-
-    float t_min = p->life_min;
-    float t_max = p->life_max;
-    int num_bins = 200;
-
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
-
-    TH1F* hist = new TH1F("hist_Lifetime", "K^{0}_{s} Lifetime", num_bins, t_min, t_max);
-    hist->GetXaxis()->SetTitle("Time [s]"); 
-    hist->GetYaxis()->SetTitle("Counts per bin");
-    hist->SetMinimum(0);
-    hist->SetStats(true);
 
     V0Tree->Draw(FillHist(p->life, "hist_Lifetime").c_str(), "", "hist"); 
 
@@ -659,16 +639,18 @@ void MakeLifetimeHist(Particle* p, TTree* V0Tree) {
     LifetimeFit->SetParName(4, "t_s");  // Signal lifetime
 
     // Initial guesses
-    //LifetimeFit->SetParameter(0, 16382);       // C_0
-    //LifetimeFit->SetParameter(2, 2.5e-10);     // background lifetime PDG
+    LifetimeFit->SetParameter(0, 0.002);
+    LifetimeFit->SetParameter(1, 397332);
+    LifetimeFit->SetParameter(2, 1e-09);
+    LifetimeFit->SetParameter(3, 4.6e+06);
     LifetimeFit->SetParameter(4, p->life_pdg); // Kshort lifetime PDG
 
     // Limits on search
     LifetimeFit->SetParLimits(0, 0, 1e+10);     // C_0 > 0
     LifetimeFit->SetParLimits(1, 0, 1e+10);     // C_b > 0
-    LifetimeFit->SetParLimits(2, 1e-10, 1e-08); // t_b
+    LifetimeFit->SetParLimits(2, 1e-12, 1e-07); // t_b
     LifetimeFit->SetParLimits(3, 0, 1e+10);     // C_s > 0
-    LifetimeFit->SetParLimits(4, 7e-11, 1e-10); // t_s 
+    LifetimeFit->SetParLimits(4, 1e-12, 3e-10); // t_s 
 
     LifetimeFit->SetLineColor(kBlue);
     LifetimeFit->SetLineWidth(2);
@@ -681,8 +663,10 @@ void MakeLifetimeHist(Particle* p, TTree* V0Tree) {
     double c_0 = LifetimeFit->GetParameter(0);
     double c_b = LifetimeFit->GetParameter(1);
     double t_b = LifetimeFit->GetParameter(2);
-    double c_k = LifetimeFit->GetParameter(3);
-    double t_k = LifetimeFit->GetParameter(4);
+    double c_s = LifetimeFit->GetParameter(3);
+    double t_s = LifetimeFit->GetParameter(4);
+    double t_s_err = LifetimeFit->GetParError(4);
+    double reduced_chisqr = LifetimeFit->GetChisquare() / LifetimeFit->GetNDF();
 
     // Use parameters of fit to plot individual contributions
     int n_pts = 1000;
@@ -694,7 +678,7 @@ void MakeLifetimeHist(Particle* p, TTree* V0Tree) {
     for (int i = 0; i < n_pts; i++) {
         t[i] = t_min + dt * i;
         y_background[i] = c_0 + c_b * TMath::Exp(-t[i]/t_b);
-        y_signal[i] = c_k * TMath::Exp(-t[i]/t_k);
+        y_signal[i] = c_s * TMath::Exp(-t[i]/t_s);
     }
     
     TGraph *background = new TGraph(n_pts, t, y_background);
@@ -714,33 +698,37 @@ void MakeLifetimeHist(Particle* p, TTree* V0Tree) {
     legend->AddEntry(signal, "Signal", "l");
     legend->Draw();
 
-    TLatex fitModel;
+    //TLatex fitModel;
     // Set normalized device coordinates, makes (x,y) position
     // range between 0 and 1 instead of in the actual data's range
-    fitModel.SetNDC(); 
-    fitModel.SetTextSize(0.03);
-    fitModel.DrawLatex(0.35, 0.7, "C_{0} + C_{b}e^{-t/#tau_{b}} + C_{s}e^{-t/#tau_{s}}");
+    //fitModel.SetNDC(); 
+    //fitModel.SetTextSize(0.03);
+    //fitModel.DrawLatex(0.35, 0.7, "C_{0} + C_{b}e^{-t/#tau_{b}} + C_{s}e^{-t/#tau_{s}}");
 
     TLatex lifetimeResult;
     lifetimeResult.SetNDC();
     lifetimeResult.SetTextSize(0.03);
-    std::string lifetimeLabel = "#tau_{s} = " + floatToString(t_k, 3, true);
+    std::string lifetimeLabel = "#tau_{s} = " + floatToString(t_s, 3, true) + " #pm " + floatToString(t_s_err, 3, true);
     lifetimeResult.DrawLatex(0.5, 0.5, lifetimeLabel.c_str());
 
+    TLatex chiSquared;
+    chiSquared.SetNDC();
+    chiSquared.SetTextSize(0.03);
+    std::string chiSquaredLabel = "#Chi^{2}_{reduced} = " + floatToString(reduced_chisqr, 3);
+    chiSquared.DrawLatex(0.5, 0.45, chiSquaredLabel.c_str());
     // Setting to log scale to easily see exponential region turn linear 
     //gPad->SetLogy();
     //canvas->Update();
 
     std::string output_fname = p->name + "Lifetime.png";
     canvas->SaveAs(output_fname.c_str());
-    
 }
 
 void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "datasetMediumV0s.root";
+    std::string data = "datasetHUGE.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -788,7 +776,7 @@ void MakeHists() {
     //MakeMassHist(&l, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
 
     //MakeKLMassHist(V0Tree);
-    MakeLifetimeHist(&k, V0Tree);
+    MakeLifetimeHist(&k, V0Tree, 400);
     //test(&k, V0Tree);
     
     //MakeInvMassHist(&hq, PVTree, 300);
@@ -798,7 +786,7 @@ void MakeHists() {
     //HighEnergyResonanceFit(&tq, PVTree, 25);
 
     //MakeInvMassHist(&tq, PVTree, 80);
-    MakeDistanceCutHist(&l, V0Tree);
+    //MakeDistanceCutHist(&l, V0Tree);
     //MakePtCutHist(&l, V0Tree);
 }
 
