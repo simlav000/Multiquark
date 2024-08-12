@@ -12,6 +12,7 @@ public:
     std::string name_formatted;
     
     Double_t mass_pdg;
+    Double_t life_pdg;
 
     // Variables from myTree
     std::string mass;
@@ -67,6 +68,7 @@ private:
         this->name_formatted = "K^{0}_{s}";
 
         this->mass_pdg = 497.611;
+        this->life_pdg = 8.954e-11;
 
         this->mass = "KMass";
         this->life = "KLife";
@@ -76,8 +78,8 @@ private:
         this->mass_max = 650;
 
         // s
-        this->life_min = 0.025e-9;
-        this->life_max = 0.22e-9;
+        this->life_min = 0.2e-9;
+        this->life_max = 1e-9;
 
         this->mass_fit_model = Fits::KMassFit;
         this->life_fit_model = Fits::lifetime_fit_2exp; 
@@ -98,6 +100,7 @@ private:
         this->name_formatted = "#Lambda^{0}";
 
         this->mass_pdg = 1115.683;
+        this->life_pdg = 2.632e-10;
 
         this->mass = "LMass";
         this->life = "LLife";
@@ -108,7 +111,7 @@ private:
 
         // s
         this->life_min = 0.025e-9;
-        this->life_max = 0.22e-9;
+        this->life_max = 0.26e-9;
 
         this->mass_fit_model = Fits::LMassFitBreitWigner;
         this->life_fit_model = Fits::lifetime_fit_2exp; 
