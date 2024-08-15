@@ -774,9 +774,8 @@ void MakeHists() {
     Pentaquark& pq = Pentaquark::getInstance();
     Hexaquark& hq  = Hexaquark::getInstance();
 
-    MakeMassHist(&k, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
+    //MakeMassHist(&k, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
 
-    //MakeKLMassHist(V0Tree);
     //MakeLifetimeHist(&k, V0Tree);
     MakeKLMassHist(V0Tree);
     //MakeLifetimeHist(&k, V0Tree, 400);
