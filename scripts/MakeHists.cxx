@@ -16,6 +16,7 @@
 #include <TH2F.h>
 #include <TLatex.h>
 #include <TLegend.h>
+#include <TLine.h>
 #include <TStyle.h>
 #include <TTree.h>
 #include <TPaveStats.h>
@@ -372,13 +373,23 @@ void MakeKLMassHist(TTree* V0Tree) {
                  Cuts::cut_on_LpT && Cuts::cut_on_LDeltaRxy
                  ); 
 
+    // Draw the histogram with a color map
+    hist->Draw("COLZ");
+
     // Set axis titles
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
 
-    // Draw the histogram with a color map
-    hist->Draw("COLZ");
+    TLine *vertical_line = new TLine(475, 0, 475, 1600);
+    vertical_line->SetLineColor(kRed);
+    vertical_line->SetLineWidth(2);
+    vertical_line->Draw("SAME");
 
+    TLine *horizontal_line = new TLine(0, 1125, 900, 1125);
+    horizontal_line->SetLineColor(kRed);
+    horizontal_line->SetLineWidth(2);
+    horizontal_line->Draw("SAME");
+    
     // Save the canvas as a PNG file
     canvas->SaveAs("LMassVsKMass.png");
 }
