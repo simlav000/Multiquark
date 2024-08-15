@@ -113,8 +113,8 @@ namespace Cuts {
         KCut2.SetName(("p_{T} > " + floatToString(KpT_low, 2) + " MeV").c_str());
         LCut2.SetName(("p_{T} > " + floatToString(LpT_low, 2) + " MeV").c_str());
     
-        KCut3.SetName(("R > " + floatToString(KDeltaRxy_low, 2) + " mm").c_str());
-        LCut3.SetName(("R > " + floatToString(LDeltaRxy_low, 2) + " mm").c_str());
+        KCut3.SetName(("d > " + floatToString(KDeltaRxy_low, 2) + " mm, #tau < 0.6 ns").c_str());
+        LCut3.SetName(("d > " + floatToString(LDeltaRxy_low, 2) + " mm, #tau < 1.2 ns").c_str());
     
     }
 }
