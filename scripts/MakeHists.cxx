@@ -348,19 +348,19 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
 }
 
 void MakeKLMassHist(TTree* V0Tree) {
-    int num_bins_x = 100;
-    int num_bins_y = 100;
+    int num_bins_x = 300;
+    int num_bins_y = 300;
 
-    int x_low = 250;
-    int x_high = 900;
+    int x_low = 280;
+    int x_high = 650;
 
-    int y_low = 1000;
+    int y_low = 1080;
     int y_high = 1600;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
     canvas->SetRightMargin(0.15);
 
-    TH2F *hist = new TH2F("hist_KLMass", "K_{s} VS #Lambda mass", num_bins_x, x_low, x_high, num_bins_y, y_low, y_high);
+    TH2F *hist = new TH2F("hist_KLMass", "#Lambda^{0} vs. K_{s}^{0} Invariant Mass", num_bins_x, x_low, x_high, num_bins_y, y_low, y_high);
 
     gStyle->SetPalette(kRainBow); // https://root.cern.ch/doc/master/classTColor.html
     hist->SetStats(false);
@@ -380,11 +380,7 @@ void MakeKLMassHist(TTree* V0Tree) {
     hist->Draw("COLZ");
 
     // Save the canvas as a PNG file
-    canvas->SaveAs("KLMassCutRp_Tcos.png");
-
-    // Clean up
-    delete hist;
-    delete canvas;
+    canvas->SaveAs("LMassVsKMass.png");
 }
 
 void SimpleHistogram(TTree* V0Tree) {
@@ -775,8 +771,8 @@ void MakeHists() {
 
     //MakeMassHist(&l, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
 
-    //MakeKLMassHist(V0Tree);
-    MakeLifetimeHist(&k, V0Tree, 400);
+    MakeKLMassHist(V0Tree);
+    //MakeLifetimeHist(&k, V0Tree, 400);
     //test(&k, V0Tree);
     
     //MakeInvMassHist(&hq, PVTree, 300);
