@@ -110,8 +110,8 @@ private:
         this->mass_max = 1300;
 
         // s
-        this->life_min = 0.025e-9;
-        this->life_max = 0.26e-9;
+        this->life_min = 0.2e-9;
+        this->life_max = 2e-9;
 
         this->mass_fit_model = Fits::LMassFitBreitWigner;
         this->life_fit_model = Fits::lifetime_fit_2exp; 
