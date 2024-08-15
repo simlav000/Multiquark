@@ -380,12 +380,12 @@ void MakeKLMassHist(TTree* V0Tree) {
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
 
-    TLine *vertical_line = new TLine(475, 0, 475, 1600);
+    TLine *vertical_line = new TLine(475, y_low, 475, y_high);
     vertical_line->SetLineColor(kRed);
     vertical_line->SetLineWidth(2);
     vertical_line->Draw("SAME");
 
-    TLine *horizontal_line = new TLine(0, 1125, 900, 1125);
+    TLine *horizontal_line = new TLine(x_low, 1125, x_high, 1125);
     horizontal_line->SetLineColor(kRed);
     horizontal_line->SetLineWidth(2);
     horizontal_line->Draw("SAME");
