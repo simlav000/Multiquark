@@ -477,11 +477,13 @@ void MakePtCutHist(Particle* p, TTree* V0Tree) {
 
 void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2, TCut Cut3) {
 
+    // These defaults are good to get the whole distribution but
+    // a custom range can be set to zoom in
     // MeV
     //float mass_min = p->mass_min;
     //float mass_max = p->mass_max;
-    float mass_min = 1100;
-    float mass_max = 1180;
+    float mass_min = 400;
+    float mass_max = 650;
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
 
@@ -602,14 +604,6 @@ void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2
 
     canvas->SaveAs((p->mass + ".png").c_str());
 
-    delete hist1;
-    delete hist2;
-    delete hist3;
-    delete Cut1Fit;
-    delete Cut2Fit;
-    delete Cut3Fit;
-    delete legend;
-    delete canvas;
 }
 
 void test(Particle* p, TTree* V0Tree) {
@@ -740,7 +734,7 @@ void MakeHists() {
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
-    std::string data = "20240710_1439dataset.root";
+    std::string data = "user.slavoie.40246910._000004.ANALYSIS.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
     
@@ -785,10 +779,10 @@ void MakeHists() {
     Pentaquark& pq = Pentaquark::getInstance();
     Hexaquark& hq  = Hexaquark::getInstance();
 
-    //MakeMassHist(&l, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
+    MakeMassHist(&k, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
 
     //MakeKLMassHist(V0Tree);
-    MakeLifetimeHist(&k, V0Tree);
+    //MakeLifetimeHist(&k, V0Tree);
     //test(&k, V0Tree);
     
     //MakeInvMassHist(&hq, PVTree, 300);
