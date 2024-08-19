@@ -1,4 +1,4 @@
-## Getting set up
+# Getting set up
 
 The multiquark analysis software is divided up into two parts. One is a private 
 repo hosted on GitLab, which requires CERN credentials to access,
@@ -6,11 +6,11 @@ and can be found [here](https://gitlab.cern.ch/slavoie/MyAnalysis). The second
 part is hosted on my public GitHub account and can be found
 [here](https://github.com/simlav000/Multiquark).
 
-## GitLab Repo
+# GitLab Repo
 This repo is my project which uses the AnalysisBase 25.2.2 release build 
 provided by ATLAS software. 
 
-# lxplus
+## lxplus
 It is intended to be ran on `lxplus`, a linux server hosted by cern
 which can be connected to by issuing the command `ssh [username]@lxplus.cern.ch`,
 which requires a cern account.
@@ -22,7 +22,7 @@ This is likely not your `$HOME` (`~`), but I would recommend making this
 place your home as the eos space not only has much more disk space available 
 for data output, but can also be accessed from the web via [cernbox](https://cernbox.cern.ch/).
 
-# Cloning the repo
+## Cloning the repo
 Then, simply go to the [gitlab page](https://gitlab.cern.ch/slavoie/MyAnalysis),
 look for the blue "Code" button, and copy the "Clone with SSH" link and issue 
 the command `git clone [link]`.
@@ -33,7 +33,7 @@ and it is possible that following this tutorial will become mandatory as the pra
 software releases are constantly changing. These instructions work as of August 20th 2024.
 Sorry if things are outdated by the time you read this. It's not my fault.
 
-# Project Architecture
+## Project Architecture
 Now that you have cloned the `MyAnalysis` directory, let's talk a bit about what is inside, in order of importance.
 - **CMakeLists_TopLevel.txt**: This file is the main configuration file for the CMake program, which is used for 
                                building and compiling our project. It will have to be renamed.
@@ -56,7 +56,7 @@ Now that you have cloned the `MyAnalysis` directory, let's talk a bit about what
 - **src**: This is where Athena sources and private header files go. Given this is not an Athena algorithm, 
              there is nothing interesting going on here either.
 
-# Building the project (Initial Setup)
+## Building the project (Initial Setup)
 As of now, all you have are the source files. In order to execute the program we must first 
 build the project. It is recommended you navigate to the `MyAnalysis` directory, and execute the following commands:
 - `mkdir -p source/MultiQuark && mv * source/MultiQuark`: This will tell you that you can't move source into itself. That's ok.
@@ -87,17 +87,27 @@ build the project. It is recommended you navigate to the `MyAnalysis` directory,
                                                   mentioned steering macro, and creates a directory for the job to output its 
                                                   data. This directory is automatically sybolically linked, so you can always 
                                                   access the contents of the latest submission by navigating to `submitDir`. 
-                                                  This bit will only work if you happen to have the permissions to MY eos 
+                                                  This bit will only work if you happen to have the permissions to **MY** eos 
                                                   space. This is because the `ATestRun_eljob.py` is currently configured to 
                                                   look in my personal files for the data to run on. If you do not have
                                                   the correct permissions here, follow the steps outlined in the "Using Rucio" 
                                                   section further down this page.
 
-# Building the project (Subsequent Setup)
-Once you've build the project a single time, building the project becomes simpler. The only three commands you must input are:
+## On Every Login
+Once the initial setup is done, you will have to execute these three commands each time you login to lxplus to build/run the job.
 - `setupATLAS`
 - `asetup AnalysisBase,25.2.2`
 - `source MyAnalysis/build/x86_64*/setup.sh`
 It is recommended to simply put these three commands in a script and make a habit of sourcing this file 
 on login. Just make sure your path to the CMake-generated `setup.sh` is correct.
 
+From here, rebuilding the project is as simple as navigating to the `build` directory, and issuing the command `cmake ../source/`.
+This is often overkill, and is only necessary if you've linked new libraries or added new packages and such. Otherwise, the `make` 
+command can be issued in the `build` directory to rebuild the project and take into account any changes to the source code.
+
+## Using Rucio
+Rucio is a tool which manages ATLAS's datasets, among other things. To use this tool, simply issue the following two commands:
+1. `lsetup rucio`
+2. `voms-proxy-init -voms atlas`
+This is another thing I would recommend placing in some `rucio.sh` script you can simply source when needed.
+With this, you now have access to co
