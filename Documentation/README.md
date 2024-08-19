@@ -2,7 +2,7 @@
 
 The multiquark analysis software is divided up into two parts. One is a private 
 repo hosted on GitLab, which requires CERN credentials to access,
-and can be found [here](https://gitlab.cern.ch/slavoie/MyAnalysis). The second
+and can be found [here](https://gitlab.cern.ch/slavoie/MyAnalysis) (This is probably the page you're currently on). The second
 part is hosted on my public GitHub account and can be found
 [here](https://github.com/simlav000/Multiquark).
 
@@ -109,5 +109,53 @@ command can be issued in the `build` directory to rebuild the project and take i
 Rucio is a tool which manages ATLAS's datasets, among other things. To use this tool, simply issue the following two commands:
 1. `lsetup rucio`
 2. `voms-proxy-init -voms atlas`
-This is another thing I would recommend placing in some `rucio.sh` script you can simply source when needed.
-With this, you now have access to co
+
+If you get an error along the lines of "lsetup not found", it means 
+you forgot to issue the setup commands. Always do this. These two 
+commands can also be placed in some `rucio.sh` script you can simply 
+source when needed. With this, you now have access to commands to 
+view and download datasets. The basic commands are:
+- `rucio list-dids [regex]`: This allows you to list DIDs which match 
+                             some sort of pattern, say "data15_13TeV"
+- `rucio list-files [container]`: This allows you to list the files 
+                                  contained within a container. This 
+                                  can be used to see which files are 
+                                  contained in a DID.
+- `rucio download [file]`: Downloads file to current directory.
+
+With these three commands you should be able to find the datasets 
+to run the job on. The datasets are here:
+
+### Datasets
+TODO: Put datasets here (only on gitlab)
+
+You should then be able to `rucio list-files [dataset]` and view the 
+files available within this dataset. Then, `rucio download [file]` 
+and place place the downloaded files in a location of your choosing.
+Be careful not to download the entire dataset. They are terrabyes large
+and will take an eternity to download. All you need to do from there 
+is edit the path to the data in `ATestRun_eljob.py` and you should 
+be set up to run the job.
+
+
+## Running on the GRID
+Running on the grid is done by setting up the panda tool. This is done 
+by issuing the command `lsetup panda`. This will prompt you for your 
+password. 
+
+Once this is done, you will have to navigate to the GRID 
+steering macro: 
+`MyAnalysis/source/MultiQuark/share/ATestSubmit_eljob.py` and change 
+a few things. The first thing to change is which dataset to run on. In
+this file, all the datasets are already available and commented out. From
+what I understand, you can only have one DID selected per submission,
+unfortunately. Simply ensure one of these lines is uncommented to select
+your desired dataset (running on other datasets is done the same way).
+Towards the end of the file, there is a line which sets the name of the
+submission to be based off the current date and time.  You can change
+this, but one thing to know is that each submission needs a unique name.
+Having it set to the date and time ensures this, otherwise you may need to
+manually change it for each submission.
+
+Finally, navigate to the `run` directory as you would normally but instead 
+run the following command: ```ATestSubmit_eljob.py --submission-dir=submitDir```
