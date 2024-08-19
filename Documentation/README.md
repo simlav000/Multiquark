@@ -98,6 +98,7 @@ Once the initial setup is done, you will have to execute these three commands ea
 - `setupATLAS`
 - `asetup AnalysisBase,25.2.2`
 - `source MyAnalysis/build/x86_64*/setup.sh`
+
 It is recommended to simply put these three commands in a script and make a habit of sourcing this file 
 on login. Just make sure your path to the CMake-generated `setup.sh` is correct.
 
