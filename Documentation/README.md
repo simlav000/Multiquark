@@ -1,10 +1,21 @@
-# Getting set up
+# MultiQuark
+
+- **Author**: Simon Lavoie
+
+- **Contact**: simon.lavoie@mail.mcgill.ca
+
+My program for summer 2024 internship analyzing ATLAS data for the search of multiquark states.
+
+# Project Structure 
 
 The multiquark analysis software is divided up into two parts. One is a private 
 repo hosted on GitLab, which requires CERN credentials to access,
-and can be found [here](https://gitlab.cern.ch/slavoie/MyAnalysis) (This is probably the page you're currently on). The second
+and can be found [here](https://gitlab.cern.ch/slavoie/MyAnalysis). The second
 part is hosted on my public GitHub account and can be found
-[here](https://github.com/simlav000/Multiquark).
+[here](https://github.com/simlav000/Multiquark) (you're probably here).
+
+It is recommended you read this documentation on the GitLab/GitLab as both platforms 
+provide a markdown format viewer.
 
 # GitHub Repo
 This repo contains functions and tools to make complete plots of the 
