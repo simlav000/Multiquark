@@ -22,6 +22,18 @@
 #include <TPaveStats.h>
 
 void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
+
+    /* This function plots the high energy resonances of the multiquark
+    * invariant mass distribution. It performs a bump hunt for computing the
+    * significance of a bin. This is done by making a copy of the histogram
+    * with a single bin removed, fitting the model to the resulting histogram,
+    * and computing the difference between the count of the missing bin, and 
+    * the fit value at that point. The significance is computed as this 
+    * difference over the error of the bar (taken to be the square root of
+    * the count). This is repeated for each bin. A significance of 5 sigmas
+    * or greater is considered a discovery.
+    */
+
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
     if (!mq) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
@@ -62,6 +74,7 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
     TF1 *fit = new TF1("InvMassFit", mq->HER_mass_fit_model, mass_min, mass_max, 4); 
 
+    // Initial guesses based on previous successful fit
     fit->SetParNames("a", "b", "c", "x-offset");
     fit->SetParameter(0, -2.56385e-08);
     fit->SetParameter(1, 0.00078);
@@ -94,11 +107,8 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     significance->GetXaxis()->SetTitle(mq->invariant_mass_label);
     significance->GetYaxis()->SetTitle("Signal Significance (#sigma)");
 
-
-
-    int count = 0;
+    // Perform bump hunt by iteratively fitting histograms with one bin removed
     for (int i = 1; i <= hist->GetNbinsX(); i++) {
-        count++;
 
         std::vector<double> x, y;
         for (int j = 1; j <= hist->GetNbinsX(); j++) {
@@ -124,7 +134,7 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 
         double bin_value = hist->GetBinContent(i);
         double bin_error = hist->GetBinError(i);
-        double fit_value = bkg_fit->Eval(hist->GetBinCenter(i));       
+        double fit_value = bkg_fit->Eval(hist->GetBinCenter(i));
 
         double residual = bin_value - fit_value;
         double significance_value = residual / bin_error;
@@ -132,12 +142,12 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
     }
 
     significance->Draw();
-    
+
     std::string sig_fname = mq->HER_filename + "Significance" + std::to_string(num_bins) + "Bins.png";
     significance_canvas->SaveAs(sig_fname.c_str());
 
     // Plotting significance projection onto y-axis as a histogram to see how 
-    // significance is distributed
+    // significance is distributed. Should look roughly gaussian.
     TCanvas *projection_canvas = new TCanvas("hist_canvas", "Histogram Canvas", 1000, 500);
     std::string projection_hist_title = mq->name_formatted + " Significance Distribution";
 
@@ -164,6 +174,12 @@ void HighEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 }
 
 void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
+
+    /* This function is used to plot the low energy resonances of the multiquark
+    * invariant mass distributions. It attempts to fit a gaussian signal to two
+    * peaks (has support for 3) for known tetraquark resonances.
+    */
+
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
     if (!mq) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
@@ -321,6 +337,10 @@ void LowEnergyResonanceFit(Particle* p, TTree* PVTree, int num_bins) {
 }
 
 void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
+    /*
+        * This function generates the entire multiquark invariant mass 
+        * distribution. Nothing crazy is going on here. No cuts or fits.
+    */
     Multiquark* mq = dynamic_cast<Multiquark*>(p);
     if (!mq) {
         throw std::runtime_error("This function is for multiquarks ONLY!");
@@ -349,6 +369,9 @@ void MakeInvMassHist(Particle* p, TTree* PVTree, int num_bins) {
 }
 
 void MakeKLMassHist(TTree* V0Tree) {
+    /*
+        * This function makes the lambda mass versus kaon mass heatmap.
+    */
     int num_bins_x = 300;
     int num_bins_y = 300;
 
@@ -380,6 +403,7 @@ void MakeKLMassHist(TTree* V0Tree) {
     hist->GetXaxis()->SetTitle("m_{#pi^{+}#pi^{-}} [MeV]");
     hist->GetYaxis()->SetTitle("m_{p^{+}#pi^{-}} [MeV]");
 
+    // lines to show mass cut
     TLine *vertical_line = new TLine(475, y_low, 475, y_high);
     vertical_line->SetLineColor(kRed);
     vertical_line->SetLineWidth(2);
@@ -394,14 +418,11 @@ void MakeKLMassHist(TTree* V0Tree) {
     canvas->SaveAs("LMassVsKMass.png");
 }
 
-void SimpleHistogram(TTree* V0Tree) {
-    TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
-    TH1F *hist = new TH1F("hist", "name", 100, 300, 900);
-    V0Tree->Draw("KMass >> hist");
-    canvas->SaveAs("Simple.png");
-}
-
 void MakeDistanceCutHist(Particle* p,  TTree* V0Tree) {
+    /*
+        * This function makes a heatmap of the distance between the primary and
+        * secondary vertices versus the kaon or lambda mass.
+    */
     int x_low = p->mass_min;
     int x_high = p->mass_max;
 
@@ -422,27 +443,23 @@ void MakeDistanceCutHist(Particle* p,  TTree* V0Tree) {
     gStyle->SetPalette(kRainBow); // https://root.cern.ch/doc/master/classTColor.html
     hist->SetStats(false);
 
-    // Fill the histogram with data from the TTree
     std::string fill_keys = "DeltaR:" + p->mass;
     V0Tree->Draw(FillHist(fill_keys, "dVsInvMass").c_str(), Cuts::cut_on_KcosTheta_3D);  // y:x -> y vs x
 
-    // Set axis titles
     hist->GetXaxis()->SetTitle(p->invariant_mass_label);
     hist->GetYaxis()->SetTitle("Distance from Primary Vertex [mm]");
 
-    // Draw the histogram with a color map
     hist->Draw("COLZ");
 
     // Save the canvas as a PNG file
     std::string fname = p->name + "_d_vs_InvMass.png";
     canvas->SaveAs(fname.c_str());
-
-    // Clean up
-    delete hist;
-    delete canvas;
 }
 
 void MakePtCutHist(Particle* p, TTree* V0Tree) {
+    /*
+        * Equivalent of previous function with transverse momentum.
+    */
     int x_low = p->mass_min; // 300 
     int x_high = p->mass_max; // 650
 
@@ -454,7 +471,7 @@ void MakePtCutHist(Particle* p, TTree* V0Tree) {
 
     TCanvas *canvas = new TCanvas("canvas", "Histogram Canvas", 1000, 600);
     canvas->SetRightMargin(0.15);
-    
+
     std::string plot_title = "p_{T} vs " + p->name_formatted + " Invariant Mass";
     TH2F *hist = new TH2F("pTMassHist", plot_title.c_str(),
                           num_bins_x, x_low, x_high, 
@@ -476,13 +493,18 @@ void MakePtCutHist(Particle* p, TTree* V0Tree) {
     // Save the canvas as a PNG file
     std::string fname = p->name + "_pT_vs_InvMass.png";
     canvas->SaveAs(fname.c_str());
-
-    // Clean up
-    delete hist;
-    delete canvas;
 }
 
 void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2, TCut Cut3) {
+    /*
+        * This function plots the invariant mass distribution of the secondary
+        * vertices. The function takes as input three TCut objects, and the 
+        * distribution is plotted on the same canvas with all three cuts.
+        * The final cut is fitted with a gaussian.
+        * 
+        * This is my friend's mom's phone number
+        * +55 51 984 273877
+    */
 
     // These defaults are good to get the whole distribution but
     // a custom range can be set to zoom in
@@ -610,10 +632,14 @@ void MakeMassHist(Particle* p, TTree* V0Tree, int num_bins, TCut Cut1, TCut Cut2
     fitSigma.DrawLatex(0.55, 0.50, sigma_result.c_str()); 
 
     canvas->SaveAs((p->mass + ".png").c_str());
-
 }
 
 void MakeLifetimeHist(Particle* p, TTree* V0Tree, int num_bins) {
+    /*
+        * This function plots the lifetime distribution of the secondary
+        * vertices and fits it to a signal + background model, plotting both 
+        * contributions separately
+    */
 
     float t_min = p->life_min;
     float t_max = p->life_max;
@@ -726,13 +752,18 @@ void MakeLifetimeHist(Particle* p, TTree* V0Tree, int num_bins) {
 }
 
 void MakeHists() {
+    /*
+        * This is the main function. It finds the data file, makes sure the data
+        * is compatible, sets the cut names retrieves the instances of the 
+        * Particle objects and finally calls the plotting functions.
+    */
     // Find ROOT file
     std::string home = std::getenv("HOME");
     std::string path = "/McGill/Multiquark/data/";
     std::string data = "datasetHUGE.root";
     std::string full = home + path + data;
     const char* name = full.c_str();
-    
+
     // Open the ROOT file
     TFile *file = TFile::Open(name);
     if (!file || file->IsZombie()) {
@@ -776,7 +807,6 @@ void MakeHists() {
 
     //MakeMassHist(&k, V0Tree, 500, Cuts::cut_on_KcosTheta_3D, Cuts::KCut2, Cuts::KCut3);
 
-    //MakeLifetimeHist(&k, V0Tree);
     MakeKLMassHist(V0Tree);
     //MakeLifetimeHist(&k, V0Tree, 400);
     //test(&k, V0Tree);
@@ -791,5 +821,3 @@ void MakeHists() {
     //MakeDistanceCutHist(&l, V0Tree);
     //MakePtCutHist(&l, V0Tree);
 }
-
-
